@@ -11,7 +11,7 @@ export function calibrationValue(s: string) {
 }
 
 export function calibrationValueWithLetters(s: string) {
-    const lettersToDigits = {
+    const lettersToDigits: {[key:string]: string} = {
         "one": "1",
         "two": "2",
         "three": "3",
@@ -31,13 +31,11 @@ export function calibrationValueWithLetters(s: string) {
         m = r.exec(s);
     }
 
-    if (wordsAndDigits.length === 0) throw new Error(`Line has no numbers: ${s}`);
+    let [first, last] = [wordsAndDigits.at(0), wordsAndDigits.at(-1)];
+    if (first === undefined || last === undefined) throw new Error(`Line has no numbers: ${s}`);
 
-    // @ts-ignore From above check, we know digits has at least one element.
-    const first = lettersToDigits[wordsAndDigits.at(0)] || wordsAndDigits.at(0);
-    // @ts-ignore From above check, we know digits has at least one element.
-    const last = lettersToDigits[wordsAndDigits.at(-1)] || wordsAndDigits.at(-1);
-
+    first = lettersToDigits[first] || first;
+    last = lettersToDigits[last] || last;
     return Number(first + last);
 }
 
