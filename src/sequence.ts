@@ -12,7 +12,6 @@
 // https://github.com/tc39/proposal-iterator-helpers
 // https://github.com/tc39/proposal-async-iterator-helpers
 // Until it's available, I've written this helper module.
-import {f} from "vitest/dist/types-63abf2e0.js";
 
 export class Sequence<T> {
     constructor(protected readonly seq: Iterable<T> | AsyncIterable<T>) {}
