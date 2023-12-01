@@ -24,7 +24,7 @@ export function calibrationValueWithLetters(s: string) {
     }
 
     const wordsAndDigits: string[] = [];
-    const r = /(?=(one|two|three|four|five|six|seven|eight|nine|\d))./g
+    const r = new RegExp(`(?=(${Object.keys(lettersToDigits).join('|')}|\\d)).`, 'g');
     let m = r.exec(s);
     while(m !== null) {
         wordsAndDigits.push(m[1]);
