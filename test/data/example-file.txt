@@ -1,0 +1,3 @@
+We have line 1
+And line 2
+And here's line 3
