@@ -1,21 +1,21 @@
 import {linesFromFile} from "./helpers.js";
 import {Sequence} from "./sequence.js";
 
-type CubeCounts = { [key: string]: number; red: number; green: number; blue: number };
+type CubeCounts = { red: number; green: number; blue: number };
 
 export class Game {
     readonly gameId: number;
-    readonly allResults = new Array<Array<[number, string]>>();
+    readonly allResults = new Array<Array<[number, keyof CubeCounts]>>();
 
     constructor(line: string) {
         const [gameLabel, allResultsStr] = line.split(':');
         this.gameId = Number(gameLabel.split(' ')[1]);
 
         for (const gameResultsStr of allResultsStr.split(';')) {
-            const gameResults = Array<[number, string]>();
+            const gameResults = Array<[number, keyof CubeCounts]>();
             for (const countAndColour of gameResultsStr.split(',')) {
                 const [count, colour] = countAndColour.trim().split(' ');
-                gameResults.push([+count, colour]);
+                gameResults.push([+count, colour as keyof CubeCounts]);
             }
             this.allResults.push(gameResults);
         }
