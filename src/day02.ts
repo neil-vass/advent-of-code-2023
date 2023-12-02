@@ -1,7 +1,7 @@
 import {linesFromFile} from "./helpers.js";
 import {Sequence} from "./sequence.js";
 
-type CubeCounts = {[key: string]: number; red: number; green: number; blue: number};
+type CubeCounts = { [key: string]: number; red: number; green: number; blue: number };
 
 export class Game {
     readonly gameId: number;
@@ -17,7 +17,7 @@ export class Game {
                 const [count, colour] = countAndColour.trim().split(' ');
                 gameResults.push([+count, colour]);
             }
-            this.allResults.push(gameResults)
+            this.allResults.push(gameResults);
         }
     }
 }
@@ -35,12 +35,12 @@ export function isPossible(game: Game) {
 }
 
 export async function sumIdsOfPossibleGames(gameDescriptions: Sequence<string>) {
-    const possibleGames = gameDescriptions.map(gd => new Game(gd)).filter(g => isPossible(g))
+    const possibleGames = gameDescriptions.map(gd => new Game(gd)).filter(g => isPossible(g));
     return Sequence.sum(possibleGames.map(g => g.gameId));
 }
 
 export function minCubesNeeded(game: Game) {
-    const needed: CubeCounts = { red: 0, green: 0, blue: 0 }
+    const needed: CubeCounts = { red: 0, green: 0, blue: 0 };
 
     for (const gameResults of game.allResults) {
         for (const [count, colour] of gameResults) {
