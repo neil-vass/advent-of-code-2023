@@ -7,8 +7,8 @@ export function parseCard(s: string) {
     const [, cardStr, winsStr, picksStr] = m;
 
     const cardNum = +cardStr;
-    const winning = winsStr.match(/\d+/g)!.map(n => +n);
-    const picks = picksStr.match(/\d+/g)!.map(n => +n);
+    const winning = winsStr.match(/\d+/g)!;
+    const picks = picksStr.match(/\d+/g)!;
     const winCount = picks.filter(p => winning.includes(p)).length;
     return { cardNum, winCount };
 }

@@ -17,7 +17,6 @@ describe("Part 1", () => {
 });
 
 describe("Part 2", () => {
-
     it("Matches example", async () => {
         const cards = new Sequence([
             "Card 1: 41 48 83 86 17 | 83 86  6 31 17  9 48 53",
