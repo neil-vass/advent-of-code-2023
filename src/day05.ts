@@ -55,7 +55,6 @@ export class Almanac {
         for (const mapRanges of this.maps.values()) {
             converted = mapFnMultipleRanges(converted, mapRanges);
         }
-
         return converted;
     }
 }
@@ -105,11 +104,12 @@ export function mapFnMultipleRanges(seedRanges: Range[], mapRanges: MapRange[]) 
         }
 
         // fill in unconverted ranges.
+        filtered.sort((a,b) => a.min - b.min);
         let startOfNextRange = seedRange.min;
         const identity = (n: number) => n;
 
         for (const r of filtered) {
-            if (r.min > seedRange.min) {
+            if (r.min > seedRange.min && startOfNextRange < r.min) {
                 output.push({
                     min: startOfNextRange,
                     max: r.min - 1,

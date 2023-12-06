@@ -17,6 +17,18 @@ describe("Part 2", () => {
             [{min: 81, max: 94}, {min: 57, max: 69}]);
     });
 
+    it("mapFnMultipleRanges works for edge cases", () => {
+        const seedRanges = [{min: 10, max: 20}];
+
+        const mapRanges = [
+            { min: 0, max: 10, convert: (n: number) => n + 100 },
+            { min: 11, max: 40, convert: (n: number) => n + 200 }
+        ];
+
+        expect(mapFnMultipleRanges(seedRanges, mapRanges)).toStrictEqual(
+            [{min: 110, max: 110}, {min: 211, max: 220}]);
+    });
+
     it("solvePart2 matches example", async () => {
         expect(await solvePart2(exampleFilename)).toBe(46);
     });
