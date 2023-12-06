@@ -1,6 +1,6 @@
 import {expect, describe, it} from "vitest";
-import {linesFromFile} from "../../src/helpers";
-import {Sequence} from "../../src/sequence";
+import {linesFromFile} from "../../src/helpers.js";
+import {Sequence} from "../../src/sequence.js";
 
 describe("#map with #linesFromFile", () => {
     it("Maps over lines from a file", async () => {
