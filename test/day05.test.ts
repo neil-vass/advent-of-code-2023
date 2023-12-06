@@ -17,7 +17,7 @@ describe("Part 2", () => {
             [{min: 81, max: 94}, {min: 57, max: 69}]);
     });
 
-    it("SolvePart2 matches example", async () => {
+    it("solvePart2 matches example", async () => {
         expect(await solvePart2(exampleFilename)).toBe(46);
     });
 });

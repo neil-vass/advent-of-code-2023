@@ -17,7 +17,7 @@ export class Almanac {
         private currentMapRanges: Array<MapRange> = [];
 
         addSeeds(seeds: Array<number>) {
-            for (let i=0; i < seeds.length-1; i++) {
+            for (let i=0; i < seeds.length-1; i += 2) {
                 this.almanac.seedRanges.push({
                     min: seeds[i],
                     max: seeds[i] + seeds[i+1] -1
@@ -140,7 +140,6 @@ export async function solvePart2(filepath: string) {
     const lines = linesFromFile(filepath);
     const almanac = await parseAlmanac(lines);
     const locations = almanac.runMappings();
-    console.log(locations)
     const minLocation = Math.min(...locations.map(val => val.min));
     return minLocation;
 }
