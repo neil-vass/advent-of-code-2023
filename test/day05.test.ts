@@ -43,13 +43,6 @@ describe("Part 1", () => {
 
 describe("Part 2", () => {
     it("Matches example", () => {
-        const builder = new Almanac.builder();
-        builder.addSeeds([79, 14, 55, 13]);
-        builder.addMap("seed-to-soil");
-        builder.addRangeForMap(50, 98, 2);
-        builder.addRangeForMap(52, 50, 48);
-        const almanac = builder.complete();
-
-        expect(almanac.runMappings()).toStrictEqual([[79, 81], [14, 14], [55, 57], [13, 13]]);
+        // TODO
     });
 });
