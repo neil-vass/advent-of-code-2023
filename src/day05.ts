@@ -1,6 +1,7 @@
 import {linesFromFile} from "./helpers.js";
 import {Sequence} from "./sequence.js";
 
+
 type mapRange = {destinationRangeStart: number, sourceRangeStart: number, rangeLength: number};
 
 export class Almanac {
@@ -91,6 +92,112 @@ export async function findLowestLocationNumber(filepath: string) {
     const almanac = await parseAlmanac(lines);
     const locations = almanac.runMappings().map(val => val[1]);
     return Math.min(...locations);
+}
+
+
+export function mapFn(seedRange: {min: number, max: number}) {
+    // 30 to 50 becomes 130 to 150.
+    const mr = { min: 30, max: 50, convert: (n: number) => n + 100 }
+    const filtered = [];
+
+    if (seedRange.min > mr.max || seedRange.max < mr.min) {
+        return [seedRange];
+    }
+
+    filtered.push({
+        min: Math.max(seedRange.min, mr.min),
+        max: Math.min(seedRange.max, mr.max),
+        convert: mr.convert
+    });
+
+
+    // fill in unconverted ranges.
+
+    let output = [];
+    let startOfNextRange = seedRange.min;
+    const identity = (n: number) => n;
+
+    for (const r of filtered) {
+        if (r.min > seedRange.min) {
+            output.push({
+                min: startOfNextRange,
+                max: r.min - 1,
+                convert: identity
+            });
+        }
+        output.push(r);
+        startOfNextRange = r.max+1;
+    }
+
+    if (startOfNextRange < seedRange.max) {
+        output.push({
+            min: startOfNextRange,
+            max: seedRange.max,
+            convert: identity
+        });
+    }
+
+    output = output.map(val => ({
+        min: val.convert(val.min),
+        max: val.convert(val.max)})
+    );
+    return output;
+}
+
+export function mapFnMultipleRanges(seedRanges: {min: number, max: number}[]) {
+    // 50 98 2
+    // 52 50 48
+    const mapRanges = [
+        { min: 98, max: 99, convert: (n: number) => n + -48 },
+        { min: 50, max: 97, convert: (n: number) => n + 2 }
+    ]
+
+    let output = [];
+
+    for (const seedRange of seedRanges) {
+        const filtered = [];
+        for (const mr of mapRanges) {
+            if (seedRange.min > mr.max || seedRange.max < mr.min) {
+                 continue;
+            }
+
+            filtered.push({
+                min: Math.max(seedRange.min, mr.min),
+                max: Math.min(seedRange.max, mr.max),
+                convert: mr.convert
+            });
+        }
+
+        // fill in unconverted ranges.
+        let startOfNextRange = seedRange.min;
+        const identity = (n: number) => n;
+
+        for (const r of filtered) {
+            if (r.min > seedRange.min) {
+                output.push({
+                    min: startOfNextRange,
+                    max: r.min - 1,
+                    convert: identity
+                });
+            }
+            output.push(r);
+            startOfNextRange = r.max + 1;
+        }
+
+        if (startOfNextRange < seedRange.max) {
+            output.push({
+                min: startOfNextRange,
+                max: seedRange.max,
+                convert: identity
+            });
+        }
+    }
+
+    output = output.map(val => ({
+        min: val.convert(val.min),
+        max: val.convert(val.max)})
+    );
+    return output;
 }
 
 // If this script was invoked directly on the command line:
