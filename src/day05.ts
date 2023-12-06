@@ -2,36 +2,32 @@ import {linesFromFile} from "./helpers.js";
 import {Sequence} from "./sequence.js";
 
 
-type mapRange = {destinationRangeStart: number, sourceRangeStart: number, rangeLength: number};
+type Range = { min: number, max: number };
+type MapRange = Range & { convert: (n: number) => number };
 
 export class Almanac {
-    private seeds = new Array<number>();
-    private maps = new Array<(n: number) => number>();
+    private seedRanges = new Array<Range>();
+    private maps = new Map<string, Array<MapRange>>();
 
     private constructor() {}
 
     static builder = class Builder {
         private almanac = new Almanac();
         private currentMapName = "";
-        private currentMapRanges: Array<mapRange> = [];
+        private currentMapRanges: Array<MapRange> = [];
 
         addSeeds(seeds: Array<number>) {
-            this.almanac.seeds.push(...seeds);
+            for (let i=0; i < seeds.length-1; i++) {
+                this.almanac.seedRanges.push({
+                    min: seeds[i],
+                    max: seeds[i] + seeds[i+1] -1
+                });
+            }
         }
 
         addMap(name: string) {
             if (this.currentMapName !== "") {
-                const ranges = [...this.currentMapRanges]
-                const mapFn = (n: number) => {
-                    for (const r of ranges) {
-                        if (n >= r.sourceRangeStart && n < (r.sourceRangeStart + r.rangeLength)) {
-                            return r.destinationRangeStart + (n - r.sourceRangeStart);
-                        }
-                    }
-                    return n;
-                }
-
-                this.almanac.maps.push(mapFn);
+                this.almanac.maps.set(this.currentMapName, this.currentMapRanges);
             }
 
             this.currentMapName = name;
@@ -39,7 +35,11 @@ export class Almanac {
         }
 
         addRangeForMap(destinationRangeStart: number, sourceRangeStart: number, rangeLength: number) {
-            this.currentMapRanges.push({destinationRangeStart, sourceRangeStart, rangeLength});
+            this.currentMapRanges.push({
+                min: sourceRangeStart,
+                max: sourceRangeStart + rangeLength -1,
+                convert: (n) => n + (destinationRangeStart - sourceRangeStart)
+            });
         }
 
         complete() {
@@ -51,12 +51,12 @@ export class Almanac {
     }
 
     runMappings() {
-        let converted = [...this.seeds];
-        for (const fn of this.maps) {
-            converted = converted.map(fn)
+        let converted = [...this.seedRanges];
+        for (const mapRanges of this.maps.values()) {
+            converted = mapFnMultipleRanges(converted, mapRanges);
         }
 
-        return this.seeds.map((seed, i) => [seed, converted[i]]);
+        return converted;
     }
 }
 export async function parseAlmanac(lines: Sequence<string>) {
@@ -87,23 +87,7 @@ export async function parseAlmanac(lines: Sequence<string>) {
     return builder.complete();
 }
 
-export async function findLowestLocationNumber(filepath: string) {
-    const lines = linesFromFile(filepath);
-    const almanac = await parseAlmanac(lines);
-    const locations = almanac.runMappings().map(val => val[1]);
-    return Math.min(...locations);
-}
-
-
-
-export function mapFnMultipleRanges(seedRanges: {min: number, max: number}[]) {
-    // 50 98 2
-    // 52 50 48
-    const mapRanges = [
-        { min: 98, max: 99, convert: (n: number) => n + -48 },
-        { min: 50, max: 97, convert: (n: number) => n + 2 }
-    ]
-
+export function mapFnMultipleRanges(seedRanges: Range[], mapRanges: MapRange[]) {
     let output = [];
 
     for (const seedRange of seedRanges) {
@@ -152,8 +136,17 @@ export function mapFnMultipleRanges(seedRanges: {min: number, max: number}[]) {
     return output;
 }
 
+export async function solvePart2(filepath: string) {
+    const lines = linesFromFile(filepath);
+    const almanac = await parseAlmanac(lines);
+    const locations = almanac.runMappings();
+    console.log(locations)
+    const minLocation = Math.min(...locations.map(val => val.min));
+    return minLocation;
+}
+
 // If this script was invoked directly on the command line:
 if (`file://${process.argv[1]}` === import.meta.url) {
     const filepath = "./data/day05.txt";
-    console.log(await findLowestLocationNumber(filepath));
+    console.log(await solvePart2(filepath));
 }
