@@ -1,6 +1,6 @@
 import {expect, describe, it} from "vitest";
 import {linesFromFile} from "../src/helpers.js";
-import {Almanac, findLowestLocationNumber, mapFn, mapFnMultipleRanges, parseAlmanac} from "../src/day05.js";
+import {Almanac, findLowestLocationNumber, mapFnMultipleRanges, parseAlmanac} from "../src/day05.js";
 import {Sequence} from "../src/sequence.js";
 
 // Worked example from https://adventofcode.com/2023/day/5
@@ -42,29 +42,6 @@ describe("Part 1", () => {
 });
 
 describe("Part 2", () => {
-    it("mapFn returns original range when no match", () => {
-        expect(mapFn({min: 10, max: 20})).toStrictEqual([{min: 10, max: 20}]);
-    });
-
-    it("mapFn returns mapped range when completely inside", () => {
-        expect(mapFn({min: 30, max: 40})).toStrictEqual([{min: 130, max: 140}]);
-    });
-
-    it("mapFn returns mapped plus unmapped ranges when partially below", () => {
-        expect(mapFn({min: 20, max: 40})).toStrictEqual(
-            [{min: 20, max: 29}, {min: 130, max: 140}]);
-    });
-
-    it("mapFn returns mapped plus unmapped ranges when partially above", () => {
-        expect(mapFn({min: 40, max: 60})).toStrictEqual(
-            [{min: 140, max: 150}, {min: 51, max: 60}]);
-    });
-
-    it("mapFn returns mapped plus unmapped ranges when surrounds", () => {
-        expect(mapFn({min: 10, max: 80})).toStrictEqual(
-            [{min: 10, max: 29}, {min: 130, max: 150}, {min: 51, max: 80}]);
-    });
-
     it("mapFnMultipleRanges behaves like example", () => {
         const seedRanges = [{min: 79, max: 92}, {min: 55, max: 67}];
 

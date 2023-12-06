@@ -95,54 +95,6 @@ export async function findLowestLocationNumber(filepath: string) {
 }
 
 
-export function mapFn(seedRange: {min: number, max: number}) {
-    // 30 to 50 becomes 130 to 150.
-    const mr = { min: 30, max: 50, convert: (n: number) => n + 100 }
-    const filtered = [];
-
-    if (seedRange.min > mr.max || seedRange.max < mr.min) {
-        return [seedRange];
-    }
-
-    filtered.push({
-        min: Math.max(seedRange.min, mr.min),
-        max: Math.min(seedRange.max, mr.max),
-        convert: mr.convert
-    });
-
-
-    // fill in unconverted ranges.
-
-    let output = [];
-    let startOfNextRange = seedRange.min;
-    const identity = (n: number) => n;
-
-    for (const r of filtered) {
-        if (r.min > seedRange.min) {
-            output.push({
-                min: startOfNextRange,
-                max: r.min - 1,
-                convert: identity
-            });
-        }
-        output.push(r);
-        startOfNextRange = r.max+1;
-    }
-
-    if (startOfNextRange < seedRange.max) {
-        output.push({
-            min: startOfNextRange,
-            max: seedRange.max,
-            convert: identity
-        });
-    }
-
-    output = output.map(val => ({
-        min: val.convert(val.min),
-        max: val.convert(val.max)})
-    );
-    return output;
-}
 
 export function mapFnMultipleRanges(seedRanges: {min: number, max: number}[]) {
     // 50 98 2
