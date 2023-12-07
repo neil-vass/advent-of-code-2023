@@ -32,7 +32,7 @@ in `test/${NAME}.test.ts`:
 
 ```
 import {expect, describe, it} from "vitest";
-import * as ${NAME} from "../src/${NAME}";
+import * as ${NAME} from "../src/${NAME}.js";
 
 describe("#fn", () => {
     it("runs", () => {
