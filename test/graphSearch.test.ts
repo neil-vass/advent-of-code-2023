@@ -1,5 +1,5 @@
 import {expect, describe, it} from "vitest";
-import {A_starSearch, breadthFirstSearch, FifoQueue, MinPriorityQueue} from "../src/graphSearch";
+import {A_starSearch, breadthFirstSearch, FifoQueue, MinPriorityQueue} from "../src/graphSearch.js";
 
 describe("Breadth first search", () => {
     it("Uses a FIFO queue", () => {
@@ -23,12 +23,13 @@ describe("Breadth first search", () => {
     it("Visits all reachable nodes", () => {
         const graph = {
             neighbours(node: string) {
-                return {
-                    "A": ["B", "C"],
-                    "B": [],
-                    "C": ["A"],
-                    "D": ["C"]
-                }[node];
+                switch(node) {
+                    case "A": return ["B", "C"];
+                    case "B": return [];
+                    case "C": return ["A"];
+                    case "D": return ["C"];
+                    default: throw new Error(`${node} is not a node`);
+                }
             }
         }
 
@@ -66,7 +67,7 @@ describe("A* search", () => {
                 switch(node) {
                     case "A": return [{node: "B", cost: 1}];
                     case "B": return [];
-                    default: throw new Error("Bad node request");
+                    default: throw new Error(`${node} is not a node`);
                 }
             },
 
@@ -76,7 +77,7 @@ describe("A* search", () => {
         }
 
         const result = A_starSearch(graph, "A", "B");
-        const shortestRoute = result.get("B").costSoFar;
+        const shortestRoute = result.get("B")!.costSoFar;
         expect(shortestRoute).toStrictEqual(1);
 
     });
@@ -89,7 +90,7 @@ describe("A* search", () => {
                     case "B": return [];
                     case "C": return [{node: "A", cost: 2}, {node: "D", cost: 2}];
                     case "D": return [{node: "C", cost: 2}, {node: "B", cost: 2}];
-                    default: throw new Error("Bad node request");
+                    default: throw new Error(`${node} is not a node`);
                 }
             },
 
@@ -99,7 +100,7 @@ describe("A* search", () => {
         }
 
         const result = A_starSearch(graph, "A", "B");
-        const shortestRoute = result.get("B").costSoFar;
+        const shortestRoute = result.get("B")!.costSoFar;
         expect(shortestRoute).toStrictEqual(6);
     });
 
