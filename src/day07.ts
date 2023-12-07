@@ -12,25 +12,54 @@ export enum HandType {
     FiveOfAKind =7
 }
 
-export function getHandType(hand: string) {
+function cardValuesAndCounts(hand: string) {
     const counter = new Map<string, number>();
-    for (const c of hand) {
-        const newCount = counter.has(c) ? counter.get(c)! +1 : 1;
-        counter.set(c, newCount);
+    for (const card of hand) {
+        const newCount = counter.has(card) ? counter.get(card)! + 1 : 1;
+        counter.set(card, newCount);
     }
+    return counter;
+}
 
-    const totals = [...counter.values()].sort((a,b) => b-a);
-    if(totals[0] === 5) return HandType.FiveOfAKind;
-    if(totals[0] === 4) return HandType.FourOfAKind;
-    if(totals[0] === 3 && totals[1] === 2) return HandType.FullHouse;
-    if(totals[0] === 3) return HandType.ThreeOfAKind;
-    if(totals[0] === 2 && totals[1] === 2) return HandType.TwoPair;
-    if(totals[0] === 2) return HandType.Pair;
+function cardCountsInOrder(valuesAndCounts: Map<string, number>) {
+    return [...valuesAndCounts.values()].sort((a,b) => b-a);
+}
+
+function cardCountsInOrderUsingJokers(valuesAndCounts: Map<string, number>) {
+    let jokerCount = 0;
+    if (valuesAndCounts.has("J")) {
+        jokerCount = valuesAndCounts.get("J")!;
+        if (jokerCount === 5) return [5];
+        valuesAndCounts.delete("J");
+    }
+    const totals = [...valuesAndCounts.values()].sort((a,b) => b-a);
+    totals[0] += jokerCount;
+    return totals;
+}
+
+function handTypeFromCardCounts(countsInOrder: Array<number>) {
+    if(countsInOrder[0] === 5) return HandType.FiveOfAKind;
+    if(countsInOrder[0] === 4) return HandType.FourOfAKind;
+    if(countsInOrder[0] === 3 && countsInOrder[1] === 2) return HandType.FullHouse;
+    if(countsInOrder[0] === 3) return HandType.ThreeOfAKind;
+    if(countsInOrder[0] === 2 && countsInOrder[1] === 2) return HandType.TwoPair;
+    if(countsInOrder[0] === 2) return HandType.Pair;
     return HandType.HighCard;
 }
 
+export function getHandType(hand: string, usingJokers=false) {
+    const valuesAndCounts = cardValuesAndCounts(hand);
+    const counter = usingJokers ? cardCountsInOrderUsingJokers : cardCountsInOrder;
+    const countsInOrder = counter(valuesAndCounts);
+    return handTypeFromCardCounts(countsInOrder);
+}
+
+export function getHandTypeWithJokers(hand: string) {
+    return getHandType(hand, true);
+}
+
 const cardValues = "J23456789TJQKA".split("");
-export function scoreHand(hand: string) {
+export function scoreHand(hand: string, handType: HandType) {
     let mul = 1;
     let score = 0;
     for (let i = hand.length-1; i >= 0; i--) {
@@ -38,33 +67,45 @@ export function scoreHand(hand: string) {
         mul *= 100;
     }
 
-    score += (getHandType(hand) * mul);
+    score += (handType * mul);
     return score;
 }
 
 
-export async function solvePart1(cardsAndBids: Sequence<string>) {
-   const queue = new MinPriorityQueue<number>();
-   for await (const line of cardsAndBids) {
-       const [hand, bid] = line.split(' ');
-       const priority = scoreHand(hand);
-       queue.push(+bid, priority);
-       console.log(hand)
-   }
+function calculateWinnings(queue: MinPriorityQueue<number>) {
+    let winnings = 0;
+    let rank = 1;
+    while (!queue.isEmpty()) {
+        winnings += queue.pull()! * rank;
+        rank++;
+    }
+    return winnings;
+}
 
-   let winnings = 0;
-   let rank = 1;
-   while (!queue.isEmpty()) {
-       winnings += queue.pull()! * rank;
-       rank++;
-   }
+async function parseAndRank(handsAndBids: Sequence<string>, handTypeFn: (hand: string) => HandType) {
+    const queue = new MinPriorityQueue<number>();
+    for await (const line of handsAndBids) {
+        const [hand, bid] = line.split(' ');
+        const handType = handTypeFn(hand);
+        const priority = scoreHand(hand, handType);
+        queue.push(+bid, priority);
+    }
+    return queue;
+}
 
-   return winnings;
+export async function solvePart1(handsAndBids: Sequence<string>) {
+    const queue = await parseAndRank(handsAndBids, getHandType);
+    return calculateWinnings(queue);
+}
+
+export async function solvePart2(handsAndBids: Sequence<string>) {
+    const queue = await parseAndRank(handsAndBids, getHandTypeWithJokers);
+    return calculateWinnings(queue);
 }
 
 // If this script was invoked directly on the command line:
 if (`file://${process.argv[1]}` === import.meta.url) {
     const filepath = "./data/day07.txt";
     const lines = linesFromFile(filepath)
-    console.log(await solvePart1(lines));
+    console.log(await solvePart2(lines));
 }
