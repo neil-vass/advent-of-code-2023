@@ -47,19 +47,18 @@ function handTypeFromCardCounts(countsInOrder: Array<number>) {
     return HandType.HighCard;
 }
 
-export function getHandType(hand: string, usingJokers=false) {
+export function getHandType(hand: string, countingFn=cardCountsInOrder) {
     const valuesAndCounts = cardValuesAndCounts(hand);
-    const counter = usingJokers ? cardCountsInOrderUsingJokers : cardCountsInOrder;
-    const countsInOrder = counter(valuesAndCounts);
+    const countsInOrder = countingFn(valuesAndCounts);
     return handTypeFromCardCounts(countsInOrder);
 }
 
 export function getHandTypeWithJokers(hand: string) {
-    return getHandType(hand, true);
+    return getHandType(hand, cardCountsInOrderUsingJokers);
 }
 
-const cardValues = "J23456789TJQKA".split("");
 export function scoreHand(hand: string, handType: HandType) {
+    const cardValues = "J23456789TJQKA".split("");
     let mul = 1;
     let score = 0;
     for (let i = hand.length-1; i >= 0; i--) {
