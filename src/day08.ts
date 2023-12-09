@@ -18,29 +18,23 @@ class Navigator {
         return steps;
     }
 
-    // Will work, takes far too long.
+
     parallelStepsBetween(startSuffix: string, goalSuffix: string) {
         let steps = 0;
         let current = [...this.network.keys()].filter(k => k.endsWith(startSuffix));
         const endings = Array.from(current, () => new Array<number>());
 
         for (const dir of generateInstructions(this.instructionStr)) {
-            if (current.every(c => c.endsWith(goalSuffix))) {
-                break;
-            }
-
             current = current.map(c => this.network.get(c)![dir]);
             steps++;
-            current.forEach((c,i) => { if (c.endsWith(goalSuffix)) endings[i].push(steps) })
-            if (steps === 1_000_000) break;
-        }
-        for (let i=0; i<endings[0].length; i++) {
-            const row = endings.map(e => e[i]).join(",");
-            console.log(row)
+            current.forEach((c,i) => { if (c.endsWith(goalSuffix)) endings[i].push(steps) });
+            if (endings.every(e => e.length > 0)) break;
         }
 
-
-        return steps;
+        const gcd = (a: number, b: number): number  => a ? gcd(b % a, a) : b;
+        const lcm = (a: number, b: number) => a * b / gcd(a, b);
+        const stepsUntilAllAtEnds = endings.map(e => e[0]).reduce(lcm);
+        return stepsUntilAllAtEnds;
     }
 }
 export function *generateInstructions(s: string) {
