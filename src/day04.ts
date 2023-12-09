@@ -14,7 +14,7 @@ export function parseCard(s: string) {
 }
 
 export async function sumCardValues(cards: Sequence<string>) {
-    const cardValues = cards.map(c => parseCard(c)).map(c =>
+    const cardValues = cards.map(parseCard).map(c =>
         (c.winCount < 2) ? c.winCount : Math.pow(2, c.winCount-1)
     );
     return Sequence.sum(cardValues);

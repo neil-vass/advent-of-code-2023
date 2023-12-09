@@ -17,9 +17,9 @@ export async function solvePart1(lines: Sequence<string>) {
 
     for await (const line of lines) {
         if (line.startsWith("Time:")) {
-            times = line.match(/\d+/g)!.map(n => +n);
+            times = line.match(/\d+/g)!.map(Number);
         } else if (line.startsWith("Distance:")) {
-            records = line.match(/\d+/g)!.map(n => +n);
+            records = line.match(/\d+/g)!.map(Number);
         }
     }
 

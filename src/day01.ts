@@ -40,7 +40,7 @@ export function calibrationValueWithLetters(s: string) {
 }
 
 export async function sumCalibrationValues(input: Sequence<string>, valueFn=calibrationValue) {
-    const values = input.map(s => valueFn(s));
+    const values = input.map(valueFn);
     return Sequence.sum(values);
 }
 

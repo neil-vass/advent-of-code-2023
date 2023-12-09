@@ -35,7 +35,7 @@ export function isPossible(game: Game) {
 }
 
 export async function sumIdsOfPossibleGames(gameDescriptions: Sequence<string>) {
-    const possibleGames = gameDescriptions.map(gd => new Game(gd)).filter(g => isPossible(g));
+    const possibleGames = gameDescriptions.map(gd => new Game(gd)).filter(isPossible);
     return Sequence.sum(possibleGames.map(g => g.gameId));
 }
 
@@ -51,7 +51,7 @@ export function minCubesNeeded(game: Game) {
 }
 
 export async function sumPowerOfGames(gameDescriptions: Sequence<string>) {
-    const minCubes = gameDescriptions.map(gd => new Game(gd)).map(g => minCubesNeeded(g));
+    const minCubes = gameDescriptions.map(gd => new Game(gd)).map(minCubesNeeded);
     const powers = minCubes.map(c => c.red * c.green * c.blue);
     return Sequence.sum(powers);
 }

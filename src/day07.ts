@@ -84,7 +84,7 @@ function calculateWinnings(queue: MinPriorityQueue<number>) {
 async function parseAndRank(handsAndBids: Sequence<string>, handTypeFn: (hand: string) => HandType) {
     const queue = new MinPriorityQueue<number>();
     for await (const line of handsAndBids) {
-        const [hand, bid] = line.split(' ');
+        const [hand, bid] = line.split(" ");
         const handType = handTypeFn(hand);
         const priority = scoreHand(hand, handType);
         queue.push(+bid, priority);
