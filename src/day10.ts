@@ -9,8 +9,7 @@ type Grid = Array<GridRow>;
 export class PipeMap {
 
     private constructor(readonly grid: Grid,
-                        readonly start: Pos,
-                        readonly originalChars: Array<string>) {
+                        readonly start: Pos) {
         this.removeBlockedConnections();
     }
 
@@ -150,7 +149,6 @@ export class PipeMap {
         // Pad with "." for easier bounds checking.
         const paddingTile = new Array<Pos>();
         const grid = new Array<GridRow>();
-        const originalChars = new Array<string>(); // For debugging.
         let start: Pos | null = null;
         let rowNum = 0;
 
@@ -166,16 +164,13 @@ export class PipeMap {
             }
             row.push(paddingTile);
             grid.push(row);
-            originalChars.push(`.${line}.`);
         }
 
         const paddingRow = Array.from(grid[0], () => paddingTile);
         grid.unshift(paddingRow);
         grid.push(paddingRow);
-        originalChars.unshift("");
-        originalChars.push("");
         if (start === null) throw new Error(`Didn't find start tile`);
-        return new PipeMap(grid, start, originalChars);
+        return new PipeMap(grid, start);
     }
 }
 
