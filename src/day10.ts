@@ -128,22 +128,6 @@ export class PipeMap {
         return enclosed.size;
     }
 
-    drawLoop() {
-        // For debugging.
-        const loop = this.tilesInLoop();
-        for (let x=0; x < this.grid.length; x++) {
-            let str = "";
-            for (let y=0; y < this.grid[0].length; y++) {
-               if (loop.some(t => t.x === x && t.y === y)) {
-                   str += this.originalChars[x][y];
-               } else {
-                   str += ".";
-               }
-            }
-            console.log(str);
-        }
-    }
-
     static async buildFromDescription(lines: Sequence<string>) {
         // Main work is to build a grid of connections.
         // Pad with "." for easier bounds checking.
