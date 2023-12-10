@@ -118,7 +118,8 @@ export class PipeMap {
 
             const next = idx === loop.length-1 ? loop[0] : loop[idx+1];
             const nextDirection = {x: next.x - current.x, y: next.y - current.y};
-            this.lookRight(current, nextDirection, loop, enclosed);
+            const turnedCorner = lastDirection.x !== nextDirection.x || lastDirection.y !== nextDirection.y;
+            if (turnedCorner) this.lookRight(current, nextDirection, loop, enclosed);
         }
         return enclosed.size;
     }
