@@ -62,9 +62,7 @@ export class PipeMap {
 
 
     private lookRight(lookingFrom: Pos, direction: Pos, loop: Pos[], seen: Set<string>) {
-        // We'll neaten this, don't worry.
         if (direction.x < 0) {
-
             const neighboursLookingRight = loop.filter(t => t.x === lookingFrom.x && t.y > lookingFrom.y).map(t => t.y);
             const firstNeighbourY = Math.min(...neighboursLookingRight);
             const x = lookingFrom.x;
@@ -73,7 +71,6 @@ export class PipeMap {
             }
 
         } else if (direction.y > 0) {
-
             const neighboursLookingRight = loop.filter(t => t.x > lookingFrom.x && t.y === lookingFrom.y).map(t => t.x);
             const firstNeighbourX = Math.min(...neighboursLookingRight);
             const y = lookingFrom.y;
@@ -82,7 +79,6 @@ export class PipeMap {
             }
 
         } else if (direction.x > 0) {
-
             const neighboursLookingRight = loop.filter(t => t.x === lookingFrom.x && t.y < lookingFrom.y).map(t => t.y);
             const firstNeighbourY = Math.max(...neighboursLookingRight);
             const x = lookingFrom.x;
@@ -92,7 +88,6 @@ export class PipeMap {
 
 
         } else if (direction.y < 0) {
-
             const neighboursLookingRight = loop.filter(t => t.x < lookingFrom.x && t.y === lookingFrom.y).map(t => t.x);
             const firstNeighbourX = Math.max(...neighboursLookingRight);
             const y = lookingFrom.y;
