@@ -138,7 +138,7 @@ export class MinPriorityQueue<T> {
 // Graph objects passed to A* search need these methods.
 export interface WeightedGraph<TNode> {
     // Nodes you can get to in one step, along with cost to move there.
-    neighbours(node: TNode): Iterable<{node: TNode, cost: number}>;
+    neighbours(currentNode: TNode): Iterable<{node: TNode, cost: number}>;
 
     // A* needs a heuristic: what is the estimated cost to get from one node
     // to another? If your heuristic:
@@ -176,6 +176,5 @@ export function A_starSearch<TNode>(graph: WeightedGraph<TNode>, start: TNode, g
             }
         }
     }
-
     return visited;
 }
