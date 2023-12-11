@@ -20,13 +20,13 @@ export class StarMap {
         this.expand(expansionRate);
     }
 
-    private expand(rate: number) {
+    private expand(expansionRate: number) {
         const emptyRowsAscending = [...this.emptyRows].sort((a,b) => a-b);
         const emptyColsAscending = [...this.emptyCols].sort((a,b) => a-b);
 
         for (const g of this.galaxies.values()) {
-            g.x += numEntriesSmallerThan(g.x, emptyRowsAscending) * (rate-1);
-            g.y += numEntriesSmallerThan(g.y, emptyColsAscending) * (rate-1);
+            g.x += numEntriesSmallerThan(g.x, emptyRowsAscending) * (expansionRate-1);
+            g.y += numEntriesSmallerThan(g.y, emptyColsAscending) * (expansionRate-1);
         }
     }
 
