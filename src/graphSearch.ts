@@ -30,7 +30,7 @@ export class FifoQueue<T> {
 
 // Graph objects passed to breadFirstSearch need this method.
 export interface Graph<TNode> {
-    neighbours(node: TNode): Iterable<TNode>;
+    neighbours(currentNode: TNode): Iterable<TNode>;
 }
 
 // BFS for reference: This visits all nodes, but doesn't do anything else -
