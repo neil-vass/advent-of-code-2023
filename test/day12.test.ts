@@ -1,6 +1,7 @@
 import {expect, describe, it} from "vitest";
 import * as day12 from "../src/day12.js";
 import {couldMatch} from "../src/day12.js";
+import {Sequence} from "../src/sequence.js";
 
 describe("Part 1", () => {
     it("Parses line", () => {
@@ -49,3 +50,20 @@ describe("Part 1", () => {
     });
 });
 
+describe("Part 2", () => {
+    it("Unfolds", () => {
+        expect(day12.unfold(".# 1", 5)).toBe(".#?.#?.#?.#?.# 1,1,1,1,1");
+    });
+
+    it("Solves example", async () => {
+        const lines = new Sequence([
+            "???.### 1,1,3",
+            ".??..??...?##. 1,1,3",
+            "?#?#?#?#?#?#?#? 1,3,1,6",
+            "????.#...#... 4,1,1",
+            "????.######..#####. 1,6,5",
+            "?###???????? 3,2,1",
+        ])
+        expect(await day12.solvePart2(lines)).toBe(525152);
+    });
+});

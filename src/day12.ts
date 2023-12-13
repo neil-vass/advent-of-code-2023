@@ -1,6 +1,7 @@
 import {linesFromFile} from "./helpers.js";
 import {Sequence} from "./sequence.js";
 import {FifoQueue} from "./graphSearch.js";
+import fs from "fs";
 
 
 type ConditionRecord = string;
@@ -30,6 +31,19 @@ export function countUnknowns(condition: ConditionRecord) {
 // Rules out various cases for now, can add more in future.
 export function couldMatch(condition: ConditionRecord, damaged: Groups) {
     const sum = (arr: number[]) => arr.reduce((a,b) => a+b,  0);
+
+    const firstQuestionIdx = condition.indexOf("?");
+    if (firstQuestionIdx === -1) return matches(condition, damaged);
+
+    const fixedPart = condition.slice(0, firstQuestionIdx);
+    const damagedInFixedPart = knownDamagedGroups(fixedPart);
+    for (let i=0; i < damagedInFixedPart.length; i++) {
+        if (i === damagedInFixedPart.length -1) {
+            if (damagedInFixedPart[i] > damaged[i]) return false;
+        } else {
+            if (damagedInFixedPart[i] !== damaged[i]) return false;
+        }
+    }
 
     const damagedSoFar = knownDamagedGroups(condition);
     const numDamagedSoFar = sum(damagedSoFar);
@@ -68,7 +82,7 @@ export function neighbours(condition: ConditionRecord, damaged: Groups) {
         splitCondition[q] = "#";
         options.push(splitCondition.join(""));
     }
-    return options.filter(c => couldMatch(c, damaged));;
+    return options.filter(c => couldMatch(c, damaged));
 }
 
 // Breadth first search, returning all goal nodes found.
@@ -77,17 +91,20 @@ export function neighbours(condition: ConditionRecord, damaged: Groups) {
 function findAllMatches(startingCondition: ConditionRecord, correctDamagedGroups: Groups) {
     const frontier = new FifoQueue<string>();
     const reached = new Set<string>();
-    const possibleArrangements = Array<string>();
+    let possibleArrangements = 0;
 
     frontier.push(startingCondition);
     reached.add(startingCondition);
 
+    let steps = 0;
     while (!frontier.isEmpty()) {
         const current = frontier.pull()!;
+        steps++;
         for (const n of neighbours(current, correctDamagedGroups)) {
             if (!reached.has(n)) {
                 if (matches(n, correctDamagedGroups)) {
-                    possibleArrangements.push(n);
+                    possibleArrangements++;
+                    //console.log(n)
                 } else {
                     frontier.push(n);
                 }
@@ -95,19 +112,38 @@ function findAllMatches(startingCondition: ConditionRecord, correctDamagedGroups
             }
         }
     }
+    //console.log(steps)
     return possibleArrangements;
 }
 
 
 export function possibleArrangements(s: string) {
     const [startingCondition, correctDamagedGroups] = parseLine(s);
-    return findAllMatches(startingCondition, correctDamagedGroups).length;
+    const count = findAllMatches(startingCondition, correctDamagedGroups);
+    return count;
+}
+
+export function unfold(s: string, times: number) {
+    let [condition, groups] = s.split(" ");
+    condition = (condition+"?").repeat(times).slice(0, -1);
+    groups = (groups+",").repeat(times).slice(0, -1);
+    return `${condition} ${groups}`;
+}
+
+export async function solvePart2(lines: Sequence<string>) {
+    let sum = 0;
+    for await (const line of lines) {
+        const a = possibleArrangements(line);
+        const b = possibleArrangements(unfold(line, 2));
+        const ratio = b / a;
+        sum += a * Math.pow(ratio, 4);
+    }
+    return sum;
 }
 
 // If this script was invoked directly on the command line:
 if (`file://${process.argv[1]}` === import.meta.url) {
     const filepath = "./data/day12.txt";
     const lines = linesFromFile(filepath);
-    const part1Answer = await Sequence.sum(lines.map(possibleArrangements));
-    console.log(part1Answer);
+    console.log(await solvePart2(lines));
 }
