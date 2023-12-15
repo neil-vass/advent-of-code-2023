@@ -54,7 +54,7 @@ describe("Part 2", () => {
             "#OO..#....",
         ]);
         const panel = await day14.Panel.buildFromDescription(lines);
-        panel.cycle(3);
+        panel.cycle();
         expect(panel.print()).toBe(
             ".....#....\n" +
             "....#...O#\n" +
@@ -66,6 +66,22 @@ describe("Part 2", () => {
             "......OOOO\n" +
             "#...O###..\n" +
             "#..OO#....\n"
-        )
+        );
+    });
+
+    it("Looks for patterns", async () => {
+        const lines =  new Sequence([
+            "O....#....",
+            "O.OO#....#",
+            ".....##...",
+            "OO.#O....O",
+            ".O.....O#.",
+            "O.#..O.#.#",
+            "..O..#O..O",
+            ".......O..",
+            "#....###..",
+            "#OO..#....",
+        ]);
+        expect(await day14.solvePart2(lines)).toBe(64);
     });
 });

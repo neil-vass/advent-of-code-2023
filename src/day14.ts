@@ -1,8 +1,8 @@
 import {linesFromFile} from "./helpers.js";
 import {Sequence} from "./sequence.js";
 
-const isRock = (c: string) => c === "O";
-const isClear = (c: string) => c === ".";
+const ROCK = "O";
+const CLEAR = ".";
 
 export type Dir = { row: -1|0|1, col: -1|0|1 };
 export const North: Dir = { row: -1, col: 0 };
@@ -16,7 +16,7 @@ export class Panel {
     private constructor() {}
 
     private rockCount(row: number) {
-        return this.grid[row].filter(isRock).length;
+        return this.grid[row].filter(c => c === ROCK).length;
     }
 
     totalLoad() {
@@ -36,13 +36,13 @@ export class Panel {
     private roll(row: number, col: number, dir: Dir) {
         let [newRow, newCol] = [row, col];
         let [nextRow, nextCol] = [row + dir.row, col + dir.col];
-        while (this.isInsideBounds(nextRow, nextCol) && isClear(this.grid[nextRow][nextCol])) {
+        while (this.isInsideBounds(nextRow, nextCol) && this.grid[nextRow][nextCol] === CLEAR) {
             [newRow, newCol] = [nextRow, nextCol];
             [nextRow, nextCol] = [nextRow + dir.row, nextCol + dir.col];
         }
 
-        this.grid[row][col] = ".";
-        this.grid[newRow][newCol] = "O";
+        this.grid[row][col] = CLEAR;
+        this.grid[newRow][newCol] = ROCK;
     }
 
     private *count(min: number, max: number, increment: -1|0|1) {
@@ -60,7 +60,7 @@ export class Panel {
     tilt(dir: Dir) {
         for (const row of this.count(0, this.grid.length-1, dir.row)) {
             for (const col of this.count(0, this.grid[0].length-1, dir.col)) {
-                if (isRock(this.grid[row][col])) this.roll(row, col, dir);
+                if (this.grid[row][col] === ROCK) this.roll(row, col, dir);
             }
         }
     }
@@ -78,6 +78,28 @@ export class Panel {
         return this.grid.reduce((str, row) => str += row.join("") + "\n", "");
     }
 
+    async configurationAfter(numCycles: number) {
+        const results = new Map<string, number>();
+        results.set(this.print(), 0);
+
+        for (let i=1; i <= numCycles; i++) {
+            this.cycle();
+            const configuration = this.print();
+            if (!results.has(configuration)) {
+                results.set(configuration, i);
+            } else {
+                const startOfRepeats = results.get(configuration)!;
+                const beforeRepeats = startOfRepeats -1;
+                const periodOfRepeats = i - startOfRepeats;
+                const target = (numCycles - beforeRepeats) % periodOfRepeats + beforeRepeats;
+                const targetString = [...results.keys()][target];
+                const targetDescription = new Sequence(targetString.trim().split("\n"));
+                return Panel.buildFromDescription(targetDescription);
+            }
+        }
+        return this;
+    }
+
     static async buildFromDescription(lines: Sequence<string>) {
         const panel = new Panel();
         for await (const line of lines) {
@@ -93,9 +115,15 @@ async function solvePart1(lines: Sequence<string>) {
     return panel.totalLoad();
 }
 
+export async function solvePart2(lines: Sequence<string>) {
+    const panel = await Panel.buildFromDescription(lines);
+    const targetPanel = await panel.configurationAfter(1_000_000_000);
+    return targetPanel.totalLoad();
+}
+
 // If this script was invoked directly on the command line:
 if (`file://${process.argv[1]}` === import.meta.url) {
     const filepath = "./data/day14.txt";
     const lines = linesFromFile(filepath);
-    console.log(await solvePart1(lines));
+    console.log(await solvePart2(lines));
 }
