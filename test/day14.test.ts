@@ -38,3 +38,34 @@ describe("Part 1", () => {
         expect(panel.totalLoad()).toBe(136);
     });
 });
+
+describe("Part 2", () => {
+    it("Cycles", async () => {
+        const lines =  new Sequence([
+            "O....#....",
+            "O.OO#....#",
+            ".....##...",
+            "OO.#O....O",
+            ".O.....O#.",
+            "O.#..O.#.#",
+            "..O..#O..O",
+            ".......O..",
+            "#....###..",
+            "#OO..#....",
+        ]);
+        const panel = await day14.Panel.buildFromDescription(lines);
+        panel.cycle(3);
+        expect(panel.print()).toBe(
+            ".....#....\n" +
+            "....#...O#\n" +
+            "...OO##...\n" +
+            ".OO#......\n" +
+            ".....OOO#.\n" +
+            ".O#...O#.#\n" +
+            "....O#....\n" +
+            "......OOOO\n" +
+            "#...O###..\n" +
+            "#..OO#....\n"
+        )
+    });
+});
