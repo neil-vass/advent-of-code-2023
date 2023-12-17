@@ -47,3 +47,10 @@ describe("Part 1", () => {
         expect(contraption.countEnergizedTiles(beamStart, Dir.Right)).toBe(46);
     });
 });
+
+describe("Part 2", () => {
+    it("Solves example", async () => {
+        const lines = linesFromFile("./test/data/day16-example.txt")
+        expect(await day16.solvePart2(lines)).toBe(51);
+    });
+});

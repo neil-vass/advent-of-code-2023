@@ -91,6 +91,25 @@ export class Contraption {
         return tiles.size;
     }
 
+    maximumEnergizedTiles() {
+        let maxSoFar = 0;
+        const [bottomX, rightmostY] = [this.grid.length-1, this.grid[0].length-1];
+
+        for (let x=0; x <= bottomX; x++) {
+            const fromLeft = this.countEnergizedTiles({x, y: 0}, Dir.Right);
+            const fromRight = this.countEnergizedTiles({x, y: rightmostY}, Dir.Left);
+            maxSoFar = Math.max(maxSoFar, fromLeft, fromRight);
+        }
+
+        for (let y=0; y <= rightmostY; y++) {
+            const fromTop = this.countEnergizedTiles({x: 0, y}, Dir.Down);
+            const fromBottom = this.countEnergizedTiles({x: bottomX, y}, Dir.Up);
+            maxSoFar = Math.max(maxSoFar, fromTop, fromBottom);
+        }
+
+        return maxSoFar;
+    }
+
     static async buildFromDescription(lines: Sequence<string>) {
         const grid = await lines.map(ln => ln.split("")).toArray();
         return new Contraption(grid);
@@ -103,9 +122,14 @@ export async function solvePart1(lines: Sequence<string>) {
     return contraption.countEnergizedTiles(beamStart, Dir.Right);
 }
 
+export async function solvePart2(lines: Sequence<string>) {
+    const contraption = await Contraption.buildFromDescription(lines);
+    return contraption.maximumEnergizedTiles();
+}
+
 // If this script was invoked directly on the command line:
 if (`file://${process.argv[1]}` === import.meta.url) {
     const filepath = "./data/day16.txt";
     const lines = linesFromFile(filepath);
-    console.log(await solvePart1(lines));
+    console.log(await solvePart2(lines));
 }
