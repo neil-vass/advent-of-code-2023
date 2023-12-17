@@ -25,8 +25,8 @@ export class HeadOfPath {
         }
     }
 
-    // Rules: can't take more than 3 steps in the same direction,
-    // can't backtrack. This class doesn't know about grid's size.
+    // Applies rules about crucible steering. This class doesn't
+    // know about grid's size, some options need filtered out by callers.
     possibleNextSteps(cartType=Crucible.Standard) {
         let directions = new Set([Dir.Up, Dir.Right, Dir.Down, Dir.Left]);
         if (this.stepsInSameDirection > 0) {
