@@ -1,6 +1,6 @@
 import {expect, describe, it, beforeEach} from "vitest";
 import * as day17 from "../src/day17.js";
-import {Dir, HeadOfPath} from "../src/day17.js";
+import {Crucible, Dir, HeadOfPath} from "../src/day17.js";
 import {Sequence} from "../src/sequence.js";
 
 
@@ -80,5 +80,23 @@ describe("Part 1", () => {
 
     it("Solves example", async () => {
         expect(await day17.solvePart1(exampleLines)).toBe(102);
+    });
+});
+
+describe("Part 2", () => {
+    it("Takes unfortunate path", async () => {
+        const lines = new Sequence([
+            "111111111111",
+            "999999999991",
+            "999999999991",
+            "999999999991",
+            "999999999991",
+        ]);
+        const routeFinder = await day17.RouteFinder.buildFromDescription(lines, Crucible.Ultra);
+        expect(routeFinder.heatLossOnBestPath()).toBe(71);
+    });
+
+    it("Solves example", async () => {
+        expect(await day17.solvePart2(exampleLines)).toBe(94);
     });
 });

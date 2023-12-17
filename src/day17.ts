@@ -6,6 +6,8 @@ type Pos = { x: number, y: number };
 
 export enum Dir { Up, Right, Down, Left};
 
+export enum Crucible { Standard, Ultra};
+
 export class HeadOfPath {
     constructor(readonly pos: Pos,
                 readonly costSoFar = 0,
@@ -25,13 +27,21 @@ export class HeadOfPath {
 
     // Rules: can't take more than 3 steps in the same direction,
     // can't backtrack. This class doesn't know about grid's size.
-    possibleNextSteps() {
-        const directions = new Set([Dir.Up, Dir.Right, Dir.Down, Dir.Left]);
+    possibleNextSteps(cartType=Crucible.Standard) {
+        let directions = new Set([Dir.Up, Dir.Right, Dir.Down, Dir.Left]);
         if (this.stepsInSameDirection > 0) {
             directions.delete(this.reverseDirection);
         }
-        if (this.stepsInSameDirection >= 3) {
-            directions.delete(this.moveDirection);
+        if (cartType === Crucible.Standard) {
+            if (this.stepsInSameDirection >= 3) {
+                directions.delete(this.moveDirection);
+            }
+        } else if (cartType === Crucible.Ultra) {
+            if (this.stepsInSameDirection > 0 && this.stepsInSameDirection < 4) {
+                directions = new Set([this.moveDirection]);
+            } else if (this.stepsInSameDirection >= 10) {
+                directions.delete(this.moveDirection);
+            }
         }
 
         const options = new Array<{pos: Pos, dir: Dir}>();
@@ -47,7 +57,8 @@ export class HeadOfPath {
 export class RouteFinder {
     private constructor(readonly trafficMap: number[][],
                         readonly start: Pos,
-                        readonly goal: Pos) {}
+                        readonly goal: Pos,
+                        readonly cartType: Crucible) {}
 
     isInsideBounds(pos: Pos) {
         return (pos.x >= 0 && pos.x < this.trafficMap.length &&
@@ -61,7 +72,7 @@ export class RouteFinder {
     // Possible next moves you could make.
     neighbours(current: HeadOfPath): Array<HeadOfPath> {
         const options = new Array<HeadOfPath>();
-        for (const {pos, dir} of current.possibleNextSteps()) {
+        for (const {pos, dir} of current.possibleNextSteps(this.cartType)) {
             if (this.isInsideBounds(pos)) {
                 const cost = current.costSoFar + this.costForEntering(pos);
 
@@ -88,9 +99,14 @@ export class RouteFinder {
         });
     }
 
-    static positionFromHashedState(hashedState: string) {
-        const state = JSON.parse(hashedState);
-        return state.pos;
+    // Some of the rules about when ultra crucibles can stop or turn are in the
+    // HeadOfPath class, some are here ... I'd go straight to refactoring these
+    // in real code, let's see if I get a chance with this daily puzzle code :)
+    canStop(headOfPath: HeadOfPath) {
+        if (this.cartType === Crucible.Ultra && headOfPath.stepsInSameDirection < 4) {
+            return false;
+        }
+        return true;
     }
 
     // Adapted from the general A_starSearch version in ./src/graphSearch.
@@ -111,8 +127,11 @@ export class RouteFinder {
         while (!frontier.isEmpty()) {
             const current = frontier.pull()!;
             if (current.pos.x === goal.x && current.pos.y === goal.y) {
-                winningPath = current;
-                break;
+                // Oh we really need to talk about where this logic belongs
+                if (this.canStop(current)) {
+                    winningPath = current;
+                    break;
+                }
             }
 
             for (const nextStep of this.neighbours(current)) {
@@ -139,12 +158,12 @@ export class RouteFinder {
         return path.costSoFar;
     }
 
-    static async buildFromDescription(lines: Sequence<string>) {
+    static async buildFromDescription(lines: Sequence<string>, cartType=Crucible.Standard) {
         const numbers = lines.map(ln => ln.split("").map(Number));
         const trafficMap = await numbers.toArray();
         const start = { x: 0, y: 0 };
         const goal = { x: trafficMap.length-1, y: trafficMap[0].length-1 };
-        return new RouteFinder(trafficMap, start, goal);
+        return new RouteFinder(trafficMap, start, goal, cartType);
     }
 }
 
@@ -154,10 +173,15 @@ export async function solvePart1(lines: Sequence<string>) {
     return routeFinder.heatLossOnBestPath();
 }
 
+export async function solvePart2(lines: Sequence<string>) {
+    const routeFinder = await RouteFinder.buildFromDescription(lines, Crucible.Ultra);
+    return routeFinder.heatLossOnBestPath();
+}
+
 // If this script was invoked directly on the command line:
 if (`file://${process.argv[1]}` === import.meta.url) {
     const filepath = "./data/day17.txt";
     const lines = linesFromFile(filepath);
-    console.log(await solvePart1(lines));
+    console.log(await solvePart2(lines));
 
 }
