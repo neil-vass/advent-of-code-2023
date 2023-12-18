@@ -21,8 +21,12 @@ export function unfold(s: string, scale: number) {
 }
 
 export function possibleArrangements(condition: ConditionRecord, damaged: Groups) {
-    // get first group?
+    // No first group? We're done.
     if (damaged.length === 0) return 1;
+
+    // Get first group, solve for that, recurse with the rest of the info.
+    const [head, ...rest] = damaged;
+    
 
     return 1;
 }
