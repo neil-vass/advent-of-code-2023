@@ -45,21 +45,37 @@ describe("Two possibility cases", () => {
     });
 });
 
+describe("Examples from part 1", () => {
+    it("Solves example lines (without unfolding)", () => {
+        expect(day12pt2.possibleArrangements("???.###", [1,1,3])).toBe(1);
+        expect(day12pt2.possibleArrangements(".??..??...?##.", [1,1,3])).toBe(4);
+        expect(day12pt2.possibleArrangements("?#?#?#?#?#?#?#?.", [1,3,1,6])).toBe(1);
+        expect(day12pt2.possibleArrangements("????.#...#...", [4,1,1])).toBe(1);
+        expect(day12pt2.possibleArrangements("????.######..#####.", [1,6,5])).toBe(4);
+        expect(day12pt2.possibleArrangements("?###????????", [3,2,1])).toBe(10);
+    });
+});
+
 describe("Overall part 2 puzzle", () => {
     it("Unfolds", () => {
         expect(day12pt2.unfold(".# 1", 5)).toBe(".#?.#?.#?.#?.# 1,1,1,1,1");
     });
 
+    it("Unfolds and solves slowest example line", () => {
+        const unfoldedLine = day12pt2.unfold("?###???????? 3,2,1", 5);
+        const [condition, damaged] = day12pt2.parseLine(unfoldedLine);
+        expect(day12pt2.possibleArrangements(condition, damaged)).toBe(506250);
+    });
+
     it("Solves example", async () => {
-        // The last line in the example has 506250 arrangements, takes too long to run.
         const lines = new Sequence([
             "???.### 1,1,3",
             ".??..??...?##. 1,1,3",
             "?#?#?#?#?#?#?#? 1,3,1,6",
             "????.#...#... 4,1,1",
             "????.######..#####. 1,6,5",
-            // "?###???????? 3,2,1", // commented out as tests too slow for now.
+            "?###???????? 3,2,1",
         ])
-        expect(await day12pt2.solvePart2(lines)).toBe(18902);
+        expect(await day12pt2.solvePart2(lines)).toBe(525152);
     });
 });
