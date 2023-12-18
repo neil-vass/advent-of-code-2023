@@ -53,16 +53,20 @@ export function possibleArrangements(condition: ConditionRecord, damaged: Groups
             } else {
                 // Worth exploring.
                 const dot = condition.slice(firstQ + 1);
-                const hash = "#" + condition.slice(firstQ + 1);
+                const hash = "#" + dot;
                 return possibleArrangements(dot, damaged) + possibleArrangements(hash, damaged);
             }
         }
 
         if (thereIsAHash) {
+            // We _must_ be able to match the first group in the list from this position,
+            // or else this condition can't match this damaged list.
             const groupEndIdx = firstHash + sizeOfFirstGroup;
+            if (groupEndIdx > condition.length) return 0;
+
             const groupChunk = condition.slice(firstHash, groupEndIdx);
-            const isWholeGroup = (groupEndIdx === condition.length) || (condition[groupEndIdx] !== "#");
-            const canMakeGroup = isWholeGroup && groupChunk.match(/^[?#]+$/);
+            const isEndOfGroup = (groupEndIdx === condition.length) || (condition[groupEndIdx] !== "#");
+            const canMakeGroup = isEndOfGroup && groupChunk.match(/^[?#]+$/);
 
             if (canMakeGroup) {
                 return possibleArrangements(condition.slice(groupEndIdx + 1), restOfGroups);
