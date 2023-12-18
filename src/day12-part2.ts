@@ -53,12 +53,12 @@ export function possibleArrangements(condition: ConditionRecord, damaged: Groups
             } else {
                 // Worth exploring.
                 const dot = condition.slice(firstQ + 1);
-                const hash = "#" + dot;
+                const hash = "#" + condition.slice(firstQ + 1);
                 return possibleArrangements(dot, damaged) + possibleArrangements(hash, damaged);
             }
         }
 
-        if (firstHash !== -1) {
+        if (thereIsAHash) {
             const groupEndIdx = firstHash + sizeOfFirstGroup;
             const groupChunk = condition.slice(firstHash, groupEndIdx);
             const isWholeGroup = (groupEndIdx === condition.length) || (condition[groupEndIdx] !== "#");
