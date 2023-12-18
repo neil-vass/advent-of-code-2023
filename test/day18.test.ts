@@ -4,12 +4,12 @@ import {Sequence} from "../src/sequence.js";
 
 describe("Part 1", () => {
     it("Parses dig steps", () => {
-        expect(day18.parseDigStep("R 6 (#70c710)")).toStrictEqual({ dir: "R", distance: 6, colour: "#70c710" });
+        expect(day18.parseDigStep("R 6 (#70c710)")).toStrictEqual({ dir: "R", distance: 6 });
     });
 
     it("Gives position after dig steps", () => {
         const start = {x:0, y:0};
-        const digStep: day18.DigStep = { dir: "R", distance: 6, colour: "#70c710" };
+        const digStep: day18.DigStep = { dir: "R", distance: 6 };
         expect(day18.positionAfterDigStep(start, digStep)).toStrictEqual({x:0, y:6});
     });
 
@@ -22,7 +22,7 @@ describe("Part 1", () => {
         ]);
         const digger = await day18.Digger.buildFromDescription(lines);
         expect(digger.digPlan.length).toBe(4);
-        expect(digger.digPlan[0]).toStrictEqual({ dir: "R", distance: 1, colour: "#000000" });
+        expect(digger.digPlan[0]).toStrictEqual({ dir: "R", distance: 1 });
         expect(digger.holeVolume()).toBe(4);
     });
 

@@ -2,13 +2,13 @@ import {linesFromFile} from "./helpers.js";
 import {Sequence} from "./sequence.js";
 
 export type Pos = { x: number, y: number };
-export type DigStep = { dir: "U"|"R"|"D"|"L", distance: number, colour: string };
+export type DigStep = { dir: "U"|"R"|"D"|"L", distance: number };
 
 export function parseDigStep(s: string) {
     const m = s.match(/^([URDL]) (\d+) \((#[0-9a-f]{6})\)$/);
     if (m === null) throw new Error(`Unrecognized line format: ${s}`);
-    const [, dirStr, distStr, colour] = m;
-    return { dir: dirStr, distance: +distStr, colour } as DigStep;
+    const [, dirStr, distStr] = m;
+    return { dir: dirStr, distance: +distStr } as DigStep;
 }
 
 export function positionAfterDigStep(start: Pos, digStep: DigStep) {
