@@ -1,7 +1,6 @@
 import {linesFromFile} from "./helpers.js";
 import {Sequence} from "./sequence.js";
 
-
 export type Pos = { x: number, y: number };
 export type DigStep = { dir: "U"|"R"|"D"|"L", distance: number };
 
@@ -34,20 +33,6 @@ export function positionAfterDigStep(start: Pos, digStep: DigStep) {
         case "L": return { x: start.x, y: start.y - dist };
     }
 }
-
-// { x: 0, y: 0 }
-// { x: 0, y: 1 }
-// { x: 1, y: 1 }
-// { x: 1, y: 0 }
-// { x: 0, y: 0 }
-
-// A = I + 0.5B - 1
-// A - 0.5B + 1 = I
-
-// 1 = I + 2 - 1
-// 1 = I + 1
-// I = 0
-// answer is interior + boundary. Which is correct. Hmm.
 
 export class Digger {
     private constructor(readonly digPlan: Array<DigStep>) {}
