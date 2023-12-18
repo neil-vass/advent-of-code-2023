@@ -47,3 +47,34 @@ describe("Part 1", () => {
         expect(digger.holeVolume()).toBe(62);
     });
 });
+
+describe("Part 2", () => {
+    it("Converts colour to dig step", () => {
+        expect(day18.colourToDigStep("#70c710")).toStrictEqual({dir: "R", distance: 461937});
+    });
+
+    it("Fetches colour from input lines", () => {
+        expect(day18.parseColour("R 6 (#70c710)")).toStrictEqual("#70c710");
+    });
+
+    it("Solves example", async () => {
+        const lines = new Sequence([
+            "R 6 (#70c710)",
+            "D 5 (#0dc571)",
+            "L 2 (#5713f0)",
+            "D 2 (#d2c081)",
+            "R 2 (#59c680)",
+            "D 2 (#411b91)",
+            "L 5 (#8ceee2)",
+            "U 2 (#caa173)",
+            "L 1 (#1b58a2)",
+            "U 2 (#caa171)",
+            "R 2 (#7807d2)",
+            "U 3 (#a77fa3)",
+            "L 2 (#015232)",
+            "U 2 (#7a21e3)",
+        ]);
+        const digger = await day18.Digger.buildWithColourCorrection(lines);
+        expect(digger.holeVolume()).toBe(952408144115);
+    });
+});

@@ -1,6 +1,7 @@
 import {linesFromFile} from "./helpers.js";
 import {Sequence} from "./sequence.js";
 
+
 export type Pos = { x: number, y: number };
 export type DigStep = { dir: "U"|"R"|"D"|"L", distance: number };
 
@@ -9,6 +10,19 @@ export function parseDigStep(s: string) {
     if (m === null) throw new Error(`Unrecognized line format: ${s}`);
     const [, dirStr, distStr] = m;
     return { dir: dirStr, distance: +distStr } as DigStep;
+}
+
+export function colourToDigStep(hexColourCode: string) {
+    const dirMap = new Map([["0", "R"], ["1", "D"], ["2", "L"], ["3", "U"]]);
+    const dir = dirMap.get(hexColourCode.at(-1)!)!;
+    const distance = parseInt(hexColourCode.slice(1,-1), 16);
+    return {dir, distance} as DigStep;
+}
+
+export function parseColour(s: string) {
+    const m = s.match(/^[URDL] \d+ \((#[0-9a-f]{6})\)$/);
+    if (m === null) throw new Error(`Unrecognized line format: ${s}`);
+    return m[1];
 }
 
 export function positionAfterDigStep(start: Pos, digStep: DigStep) {
@@ -64,6 +78,11 @@ export class Digger {
         const digPlan = await lines.map(parseDigStep).toArray();
         return new Digger(digPlan);
     }
+
+    static async buildWithColourCorrection(lines: Sequence<string>) {
+        const digPlan = await lines.map(parseColour).map(colourToDigStep).toArray();
+        return new Digger(digPlan);
+    }
 }
 
 export async function solvePart1(lines: Sequence<string>) {
@@ -73,6 +92,7 @@ export async function solvePart1(lines: Sequence<string>) {
 
 // If this script was invoked directly on the command line:
 if (`file://${process.argv[1]}` === import.meta.url) {
-    const filepath = "./data/day18.txt";
-    console.log(await solvePart1(linesFromFile(filepath)));
+    const lines = linesFromFile("./data/day18.txt");
+    const digger = await Digger.buildWithColourCorrection(lines);
+    console.log(digger.holeVolume());
 }
