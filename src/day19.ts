@@ -31,23 +31,41 @@ export class Workflow {
 export class System {
 
     private readonly steps = new Map<string, Workflow>();
+    private acceptedTotal = 0;
 
-    addWorkflow(workflow: string) {
-
+    addWorkflow(workflowStr: string) {
+        const workflow = parseWorkflow(workflowStr);
+        this.steps.set(workflow.name, workflow);
     }
 
-    process(part: string) {
+    process(partStr: string) {
+        const part = parsePart(partStr);
+        let entryPoint="in"
+        while (true) {
+            const result = this.steps.get(entryPoint)!.process(part);
 
+            switch (result) {
+                case REJECT:
+                    return;
+                case ACCEPT:
+                    this.acceptedTotal += part.x + part.m + part.a + part.s;
+                    return;
+                default:
+                    entryPoint = result;
+            }
+        }
     }
 
     acceptedTotalRatings() {
-        return 1000;
+        return this.acceptedTotal;
     }
 }
 
 export function parseRule(ruleStr: string): Rule {
-    if (ruleStr === "A") return (part: Part) => ACCEPT;
-    if (ruleStr === "R") return (part: Part) => REJECT;
+    const endRuleMatch = ruleStr.match(/^\w+$/);
+    if (endRuleMatch !== null) {
+        return (part: Part) => ruleStr;
+    }
 
     const matchObject = ruleStr.match(/^([xmas])([<>])(\d+):(\w+)$/);
     if (matchObject === null) throw new Error(`Unexpected format: ${ruleStr}`);
@@ -76,8 +94,26 @@ export function parsePart(partStr: string) {
 }
 
 
+export async function solvePart1(lines: Sequence<string>) {
+    const system = new System();
+    let beforeGap = true;
+    for await (const line of lines) {
+        if (line === "") {
+            beforeGap = false;
+            continue;
+        }
+
+        if (beforeGap) {
+            system.addWorkflow(line);
+        } else {
+            system.process(line);
+        }
+    }
+    return system.acceptedTotalRatings();
+}
+
 // If this script was invoked directly on the command line:
 if (`file://${process.argv[1]}` === import.meta.url) {
-    const filepath = "./data/day19.txt";
-
+    const lines = linesFromFile("./data/day19.txt");
+    console.log(await solvePart1(lines));
 }
