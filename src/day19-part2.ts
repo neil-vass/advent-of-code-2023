@@ -31,19 +31,23 @@ export class PartsRange {
 
     splitGreaterThan(category: string, value: number) {
         const current = this.categories[category];
-        const matched = {...this.categories};
-        matched[category] = new CategoryRange(value+1, current.max);
-        const unmatched = {...this.categories};
-        unmatched[category] = new CategoryRange(current.min, value);
-        return [new PartsRange(matched), new PartsRange(unmatched)];
+        const filterForMatched = new CategoryRange(value+1, current.max);
+        const filterForUnmatched = new CategoryRange(current.min, value);
+        return this.split(category, filterForMatched, filterForUnmatched);
     }
 
     splitLessThan(category: string, value: number) {
         const current = this.categories[category];
+        const filterForMatched = new CategoryRange(current.min, value-1);
+        const filterForUnmatched = new CategoryRange(value, current.max);
+        return this.split(category, filterForMatched, filterForUnmatched);
+    }
+
+    private split(category: string, filterForMatched: CategoryRange, filterForUnmatched: CategoryRange) {
         const matched = {...this.categories};
-        matched[category] = new CategoryRange(current.min, value-1);
+        matched[category] = filterForMatched;
         const unmatched = {...this.categories};
-        unmatched[category] = new CategoryRange(value, current.max);
+        unmatched[category] = filterForUnmatched;
         return [new PartsRange(matched), new PartsRange(unmatched)];
     }
 }

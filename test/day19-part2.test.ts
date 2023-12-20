@@ -4,9 +4,7 @@ import {Sequence} from "../src/sequence.js";
 import {PartsRange} from "../src/day19-part2.js";
 import * as day19 from "../src/day19.js";
 
-
-
-describe("Part 2", () => {
+describe("Range splitting", () => {
     it("PartsRange splits", () => {
         const range = PartsRange.full;
         expect(range.combinations()).toBe(4000 * 4000 * 4000 * 4000);
@@ -16,6 +14,16 @@ describe("Part 2", () => {
         expect(unmatched.combinations()).toBe(1000 * 4000 * 4000 * 4000);
     });
 
+    it("Whole range matches split rule", () => {
+        const range = PartsRange.full;
+        const [matched, unmatched] = range.splitLessThan("m", 5000);
+        expect(matched.combinations()).toBe(4000 * 4000 * 4000 * 4000);
+        expect(unmatched.combinations()).toBe(0);
+    });
+});
+
+
+describe("Combination counting", () => {
     it("Solves reject-all base case", () => {
         const system = new day19pt2.System();
         system.addWorkflow("in{R}");
@@ -30,7 +38,8 @@ describe("Part 2", () => {
 
     it("Filters", () => {
         const system = new day19pt2.System();
-        system.addWorkflow("in{x>100:R,A}");
+        system.addWorkflow("in{x>100:xy,A}");
+        system.addWorkflow("xy{m>100:R,R}");
         expect(system.countAcceptableCombinations()).toBe(100 * 4000 * 4000 * 4000);
     });
 
