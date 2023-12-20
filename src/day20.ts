@@ -1,6 +1,7 @@
 import {linesFromFile} from "./helpers.js";
 import {Sequence} from "./sequence.js";
 import {FifoQueue} from "./graphSearch.js";
+import fs from "fs";
 
 export const LOW = "-low->";
 export const HIGH = "-high->";
@@ -30,7 +31,7 @@ export class Broadcaster extends Module {
 }
 
 export class FlipFlop extends Module {
-    private isOn = false;
+    isOn = false;
 
     receive(sender: ModuleName, pulse: Pulse): Signal[] {
         if (pulse === HIGH) {
@@ -44,7 +45,7 @@ export class FlipFlop extends Module {
 }
 
 export class Conjunction extends Module {
-    private readonly inputStates = new Map<ModuleName, Pulse>();
+    readonly inputStates = new Map<ModuleName, Pulse>();
 
     setInput(name: ModuleName) {
         this.inputStates.set(name, LOW);
@@ -61,8 +62,13 @@ export class Conjunction extends Module {
 export class System {
     private pulseQueue = new FifoQueue<Signal>();
 
+    readonly patterns: Map<ModuleName, number[]>;
     private constructor(private readonly modules: Map<string, Module>) {
         this.wireUpInputs();
+
+        const jm = this.modules.get("jm") as Conjunction;
+        const inputs = [...jm.inputStates.keys()]
+        this.patterns = new Map(inputs.map(i => [i,[]]));
     }
 
     wireUpInputs() {
@@ -76,7 +82,11 @@ export class System {
         }
     }
 
+    stepNum = 0;
     pushTheButton(logging=false) {
+        let content = "";
+        this.stepNum++;
+
         let [lowCount, highCount] = [0, 0];
         this.pulseQueue.push({ sender: "button", receiver: "broadcaster", pulse: LOW });
         while (!this.pulseQueue.isEmpty()) {
@@ -88,7 +98,10 @@ export class System {
             const receiver = this.modules.get(signal.receiver)
             if (receiver !== undefined) {
                 const responses = receiver.receive(signal.sender, signal.pulse);
-                responses.forEach(r => this.pulseQueue.push(r));
+                responses.forEach(r => {
+                    if (r.pulse === HIGH && this.patterns.has(r.sender)) this.patterns.get(r.sender)?.push(this.stepNum);
+                    this.pulseQueue.push(r)
+                });
             }
         }
         return {lowCount, highCount};
@@ -136,8 +149,20 @@ export async function solvePart1(lines: Sequence<string>) {
     return lowTotal * highTotal;
 }
 
+export async function solvePart2(lines: Sequence<string>) {
+    const system = await System.buildFromDescription(lines);
+    for (let i=0; i<100000; i++) {
+        const result = system.pushTheButton();
+    }
+    let content = "";
+    for (const [module, hits] of system.patterns.entries()) {
+        content += `${module}, ${hits}\n`;
+    }
+    fs.writeFileSync("foo.txt", content)
+}
+
 // If this script was invoked directly on the command line:
 if (`file://${process.argv[1]}` === import.meta.url) {
     const lines = linesFromFile("./data/day20.txt");
-    console.log(await solvePart1(lines));
+    console.log(await solvePart2(lines));
 }
