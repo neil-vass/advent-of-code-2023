@@ -24,7 +24,7 @@ export class FifoQueue<T> {
 
     pull() {
         if (this.items.length === 0) return null;
-        return this.items.shift();
+        return this.items.shift()!;
     }
 }
 
