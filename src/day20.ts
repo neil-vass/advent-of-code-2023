@@ -63,12 +63,16 @@ export class System {
     private pulseQueue = new FifoQueue<Signal>();
 
     readonly patterns: Map<ModuleName, number[]>;
-    private constructor(private readonly modules: Map<string, Module>) {
+    private constructor(private readonly modules: Map<string, Module>, solvingPart2=false) {
         this.wireUpInputs();
 
-        const jm = this.modules.get("jm") as Conjunction;
-        const inputs = [...jm.inputStates.keys()]
-        this.patterns = new Map(inputs.map(i => [i,[]]));
+        if(solvingPart2) {
+            const jm = this.modules.get("jm") as Conjunction;
+            const inputs = [...jm.inputStates.keys()]
+            this.patterns = new Map(inputs.map(i => [i, []]));
+        } else {
+            this.patterns = new Map();
+        }
     }
 
     wireUpInputs() {
@@ -107,13 +111,13 @@ export class System {
         return {lowCount, highCount};
     }
 
-    static async buildFromDescription(lines: Sequence<string>) {
+    static async buildFromDescription(lines: Sequence<string>, solvingPart2=false) {
         const modules = new Map<string, Module>
         for await (const moduleDescription of lines) {
             const module = parseModule(moduleDescription);
             modules.set(module.name, module);
         }
-        return new System(modules);
+        return new System(modules, solvingPart2);
     }
 }
 
@@ -150,7 +154,7 @@ export async function solvePart1(lines: Sequence<string>) {
 }
 
 export async function solvePart2(lines: Sequence<string>) {
-    const system = await System.buildFromDescription(lines);
+    const system = await System.buildFromDescription(lines, true);
     for (let i=0; i<100000; i++) {
         system.pushTheButton();
     }
