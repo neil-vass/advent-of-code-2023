@@ -6,7 +6,6 @@ export type Rule = (partsRage: PartsRange) => { matched: {destination: string, r
 
 export const ACCEPT = "A";
 export const REJECT = "R";
-export const PASS = "PASS";
 
 class CategoryRange {
     readonly count;

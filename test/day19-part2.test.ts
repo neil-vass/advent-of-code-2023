@@ -56,14 +56,14 @@ describe("Combination counting", () => {
         expect(system.countAcceptableCombinations()).toBe(4000 * 4000 * 4000 * 4000);
     });
 
-    it("Filters", () => {
+    it("Filters through multiple workflows", () => {
         const system = new day19pt2.System();
         system.addWorkflow("in{x>100:xy,A}");
         system.addWorkflow("xy{m>100:R,R}");
         expect(system.countAcceptableCombinations()).toBe(100 * 4000 * 4000 * 4000);
     });
 
-    it("Collected multiple accepted ranges from one rule", () => {
+    it("Collects multiple accepted ranges from one rule", () => {
         const system = new day19pt2.System();
         system.addWorkflow("in{x>100:A,A}");
         expect(system.countAcceptableCombinations()).toBe(4000 * 4000 * 4000 * 4000);
