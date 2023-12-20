@@ -2,7 +2,7 @@ import {linesFromFile} from "./helpers.js";
 import {Sequence} from "./sequence.js";
 
 
-export type Rule = (partsRage: PartsRange) => { matched: {destination: string, range: PartsRange}, unmatched: PartsRange | null }
+export type Rule = (partsRage: PartsRange) => { matched: {destination: string, range: PartsRange}, unmatched: PartsRange }
 
 export const ACCEPT = "A";
 export const REJECT = "R";
@@ -85,12 +85,12 @@ export class Workflow {
     }
 
     process(partsRange: PartsRange) {
-        const destinationsAndRanges = new Map<string, PartsRange>();
+        const destinationsAndRanges = new Array<{destination: string, range: PartsRange}>();
         let remainingRange = partsRange;
         for (const rule of this.rules) {
             const result = rule(remainingRange);
-            destinationsAndRanges.set(result.matched.destination, result.matched.range);
-            if (result.unmatched === null) break;
+            destinationsAndRanges.push(result.matched);
+            if (result.unmatched === PartsRange.empty) break;
             remainingRange = result.unmatched;
         }
         return destinationsAndRanges;
@@ -108,22 +108,21 @@ export class System {
     countAcceptableCombinations() {
         const partsRange = PartsRange.full;
         return this.countCombos(partsRange);
-
     }
 
     private countCombos(partsRange: PartsRange, entryPoint="in") {
         let count = 0;
         const workflow = this.steps.get(entryPoint)!;
         const destinationsAndRanges = workflow.process(partsRange);
-        for (const [destination, range] of destinationsAndRanges) {
-            switch(destination) {
+        for (const matched of destinationsAndRanges) {
+            switch(matched.destination) {
                 case REJECT:
                     continue;
                 case ACCEPT:
-                    count += range.combinations();
+                    count += matched.range.combinations();
                     break;
                 default:
-                    count += this.countCombos(range, destination);
+                    count += this.countCombos(matched.range, matched.destination);
             }
         }
         return count;
@@ -133,7 +132,10 @@ export class System {
 export function parseRule(ruleStr: string): Rule {
     const endRuleMatch = ruleStr.match(/^\w+$/);
     if (endRuleMatch !== null) {
-        return (partsRange: PartsRange) => ({ matched: {destination: ruleStr, range: partsRange}, unmatched: null });
+        return (partsRange: PartsRange) => ({
+            matched: {destination: ruleStr, range: partsRange},
+            unmatched: PartsRange.empty
+        });
     }
 
     const matchObject = ruleStr.match(/^([xmas])([<>])(\d+):(\w+)$/);
@@ -183,4 +185,5 @@ export async function solvePart2(lines: Sequence<string>) {
 // If this script was invoked directly on the command line:
 if (`file://${process.argv[1]}` === import.meta.url) {
     const lines = linesFromFile("./data/day19.txt");
+    console.log(await solvePart2(lines));
 }

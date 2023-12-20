@@ -12,6 +12,9 @@ describe("Range splitting", () => {
         const [matched, unmatched] = range.splitGreaterThan("x", 1000);
         expect(matched.combinations()).toBe(3000 * 4000 * 4000 * 4000);
         expect(unmatched.combinations()).toBe(1000 * 4000 * 4000 * 4000);
+
+        const sumOfAllSplits = matched.combinations() + unmatched.combinations();
+        expect(sumOfAllSplits).toBe(range.combinations());
     });
 
     it("Whole range matches split rule", () => {
@@ -19,6 +22,9 @@ describe("Range splitting", () => {
         const [matched, unmatched] = range.splitLessThan("m", 5000);
         expect(matched.combinations()).toBe(4000 * 4000 * 4000 * 4000);
         expect(unmatched.combinations()).toBe(0);
+
+        const sumOfAllSplits = matched.combinations() + unmatched.combinations();
+        expect(sumOfAllSplits).toBe(range.combinations());
     });
 
     it("No match for split rule", () => {
@@ -27,6 +33,12 @@ describe("Range splitting", () => {
         const [emptyMatch, wholeRangeUnmatched] = above3000.splitLessThan("a", 1000);
         expect(emptyMatch.combinations()).toBe(0);
         expect(wholeRangeUnmatched.combinations()).toBe(4000 * 4000 * 1000 * 4000);
+
+        const sumOfAllSplits =
+            discarded.combinations() +
+            emptyMatch.combinations() +
+            wholeRangeUnmatched.combinations();
+        expect(sumOfAllSplits).toBe(range.combinations());
     });
 });
 
@@ -51,8 +63,10 @@ describe("Combination counting", () => {
         expect(system.countAcceptableCombinations()).toBe(100 * 4000 * 4000 * 4000);
     });
 
-    it("Counts acceptable combinations for simple system", () => {
-        expect("this").toBe("a real test")
+    it("Collected multiple accepted ranges from one rule", () => {
+        const system = new day19pt2.System();
+        system.addWorkflow("in{x>100:A,A}");
+        expect(system.countAcceptableCombinations()).toBe(4000 * 4000 * 4000 * 4000);
     });
 
     it("Solves example", async () => {
