@@ -63,7 +63,7 @@ describe("Combination counting", () => {
         expect(system.countAcceptableCombinations()).toBe(100 * 4000 * 4000 * 4000);
     });
 
-    it("Collects multiple accepted ranges from one rule", () => {
+    it("Collects multiple accepted ranges from one workflow", () => {
         const system = new day19pt2.System();
         system.addWorkflow("in{x>100:A,A}");
         expect(system.countAcceptableCombinations()).toBe(4000 * 4000 * 4000 * 4000);
