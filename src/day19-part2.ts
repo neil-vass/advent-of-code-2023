@@ -11,39 +11,61 @@ export const PASS = "PASS";
 class CategoryRange {
     readonly count;
     constructor(readonly min: number, readonly max: number) {
-        this.count = max - min +1;
+        if (min > max) throw new Error(`min (${min}) is greater than max (${max})`);
+
+        if (max === 0) this.count = 0;
+        else this.count = max - min +1;
     }
 
     static readonly full = new CategoryRange(1, 4000);
+
+    static readonly empty = new CategoryRange(0, 0);
 }
 
 export class PartsRange {
     private constructor(private readonly categories: {[index: string]: CategoryRange}) {}
 
-    static readonly full = new PartsRange({ "x": CategoryRange.full,
-                                            "m": CategoryRange.full,
-                                            "a": CategoryRange.full,
-                                            "s": CategoryRange.full});
+    static readonly full = new PartsRange({
+        "x": CategoryRange.full, "m": CategoryRange.full, "a": CategoryRange.full, "s": CategoryRange.full});
+
+    static readonly empty = new PartsRange({
+        "x": CategoryRange.empty, "m": CategoryRange.empty, "a": CategoryRange.empty, "s": CategoryRange.empty});
 
     combinations() {
         return Object.values(this.categories).reduce((acc,val) => acc * val.count, 1);
     }
 
-    splitGreaterThan(category: string, value: number) {
+    splitGreaterThan(category: string, value: number): [matched: PartsRange, unmatched: PartsRange] {
         const current = this.categories[category];
-        const filterForMatched = new CategoryRange(value+1, current.max);
-        const filterForUnmatched = new CategoryRange(current.min, value);
-        return this.split(category, filterForMatched, filterForUnmatched);
+
+        if (value < current.min) {
+            return [this, PartsRange.empty];
+        } else if (value > current.max) {
+            return [PartsRange.empty, this];
+        } else {
+            const filterForMatched = new CategoryRange(value + 1, current.max);
+            const filterForUnmatched = new CategoryRange(current.min, value);
+            return this.split(category, filterForMatched, filterForUnmatched);
+        }
     }
 
-    splitLessThan(category: string, value: number) {
+    splitLessThan(category: string, value: number): [matched: PartsRange, unmatched: PartsRange] {
         const current = this.categories[category];
-        const filterForMatched = new CategoryRange(current.min, value-1);
-        const filterForUnmatched = new CategoryRange(value, current.max);
-        return this.split(category, filterForMatched, filterForUnmatched);
+
+        if (value > current.max) {
+            return [this, PartsRange.empty];
+        } else if (value < current.min) {
+            return [PartsRange.empty, this];
+        } else {
+            const filterForMatched = new CategoryRange(current.min, value - 1);
+            const filterForUnmatched = new CategoryRange(value, current.max);
+            return this.split(category, filterForMatched, filterForUnmatched);
+        }
     }
 
-    private split(category: string, filterForMatched: CategoryRange, filterForUnmatched: CategoryRange) {
+    private split(category: string,
+                  filterForMatched: CategoryRange,
+                  filterForUnmatched: CategoryRange): [matched: PartsRange, unmatched: PartsRange] {
         const matched = {...this.categories};
         matched[category] = filterForMatched;
         const unmatched = {...this.categories};

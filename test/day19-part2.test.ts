@@ -1,8 +1,8 @@
 import {expect, describe, it} from "vitest";
 import * as day19pt2 from "../src/day19-part2.js";
-import {Sequence} from "../src/sequence.js";
 import {PartsRange} from "../src/day19-part2.js";
-import * as day19 from "../src/day19.js";
+import {Sequence} from "../src/sequence.js";
+
 
 describe("Range splitting", () => {
     it("PartsRange splits", () => {
@@ -19,6 +19,14 @@ describe("Range splitting", () => {
         const [matched, unmatched] = range.splitLessThan("m", 5000);
         expect(matched.combinations()).toBe(4000 * 4000 * 4000 * 4000);
         expect(unmatched.combinations()).toBe(0);
+    });
+
+    it("No match for split rule", () => {
+        const range = PartsRange.full;
+        const [above3000, discarded] = range.splitGreaterThan("a", 3000);
+        const [emptyMatch, wholeRangeUnmatched] = above3000.splitLessThan("a", 1000);
+        expect(emptyMatch.combinations()).toBe(0);
+        expect(wholeRangeUnmatched.combinations()).toBe(4000 * 4000 * 1000 * 4000);
     });
 });
 
