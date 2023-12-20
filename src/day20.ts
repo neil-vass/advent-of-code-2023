@@ -152,12 +152,13 @@ export async function solvePart1(lines: Sequence<string>) {
 export async function solvePart2(lines: Sequence<string>) {
     const system = await System.buildFromDescription(lines);
     for (let i=0; i<100000; i++) {
-        const result = system.pushTheButton();
+        system.pushTheButton();
     }
     let content = "";
     for (const [module, hits] of system.patterns.entries()) {
         content += `${module}, ${hits}\n`;
     }
+    // Take this to a spreadsheet, find the recurring cycles, and LCM to see where they sync up.
     fs.writeFileSync("foo.txt", content)
 }
 
