@@ -29,6 +29,9 @@ export class Stack<T> {
 
 
 // FIFO queue, used by breadthFirstSearch.
+// This performs poorly with large, frequently-changing collections -
+// array.shift needs to rearrange the underlying content frequently.
+// A library version designed to perform well is a better choice.
 export class FifoQueue<T> {
     private readonly items = new Array<T>();
 
