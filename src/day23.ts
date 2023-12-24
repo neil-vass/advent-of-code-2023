@@ -4,7 +4,7 @@ import {FifoQueue, Stack} from "./graphSearch.js";
 
 export type Pos = { x: number, y: number };
 type HashedPos = string;
-const hash = (pos: Pos) => pos.x + "," + pos.y;
+const hash = (pos: Pos) => `(${pos.x},${pos.y})`;
 
 export class HikingMap {
     readonly digraph = new Map<HashedPos, Array<{ destination: HashedPos, cost: number }>>();
@@ -81,8 +81,8 @@ export class HikingMap {
     }
 
     private findLongestPath() {
-        const frontier = new Stack<{ head: HashedPos, visited: Set<HashedPos>, length: number }>();
-        frontier.push({ head: "start", visited: new Set<HashedPos>(["start"]), length: 0 });
+        const frontier = new Stack<{ head: HashedPos, visited: string, length: number }>();
+        frontier.push({ head: "start", visited: "start", length: 0 });
 
         const reached = new Map<string, number>();
         let longestSoFar = 0;
@@ -98,10 +98,9 @@ export class HikingMap {
             }
 
             for (const neighbour of this.digraph.get(path.head)!) {
-                if (!path.visited.has(neighbour.destination)) {
+                if (!path.visited.includes(neighbour.destination)) {
                     const head = neighbour.destination;
-                    const visited = new Set(path.visited);
-                    visited.add(head);
+                    const visited = path.visited + head;
                     const length = path.length + neighbour.cost;
                     frontier.push({ head, visited, length });
                 }

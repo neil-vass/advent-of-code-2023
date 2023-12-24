@@ -45,10 +45,10 @@ describe("Part 1", () => {
         console.log(hikingMap.digraph);
 
         const expectedGraph = new Map([
-            ["start", [{ destination: "1,1", cost: 1 }]],
-            ["5,6", []],
-            ["1,1", [{ destination: "3,6", cost: 7 }, { destination: "3,6", cost: 9 }]],
-            ["3,6", [{ destination: "5,6", cost: 2 }, { destination: "1,1", cost: 9 }, { destination: "1,1", cost: 7 }]]
+            ["start", [{ destination: "(1,1)", cost: 1 }]],
+            ["(5,6)", []],
+            ["(1,1)", [{ destination: "(3,6)", cost: 7 }, { destination: "(3,6)", cost: 9 }]],
+            ["(3,6)", [{ destination: "(5,6)", cost: 2 }, { destination: "(1,1)", cost: 9 }, { destination: "(1,1)", cost: 7 }]]
         ]);
 
         expect(hikingMap.digraph).toStrictEqual(expectedGraph);
