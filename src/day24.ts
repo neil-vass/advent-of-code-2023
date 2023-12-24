@@ -10,7 +10,7 @@ export class Hailstone {
 export function parseHailstone(s: string) {
     const m = s.match(/^(-?\d+),\s+(-?\d+),\s+(-?\d+)\s+@\s+(-?\d+),\s+(-?\d+),\s+(-?\d+)$/);
     if (m === null) throw new Error(`Unexpected line format: ${s}`);
-    const [,xpos, ypos, zpos, xvel, yvel, zvel] = m;
+    const [, xpos, ypos, zpos, xvel, yvel, zvel] = m;
     const position = {x: +xpos, y: +ypos,  z: +zpos};
     const velocity = {x: +xvel, y: +yvel,  z: +zvel};
     return new Hailstone(position, velocity);
