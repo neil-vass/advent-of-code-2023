@@ -81,24 +81,14 @@ export class HikingMap {
     }
 
     private findLongestPath() {
-        let lastT = new Date();
         const frontier = new Stack<{ head: HashedPos, visited: Set<HashedPos>, length: number }>();
         frontier.push({ head: "start", visited: new Set<HashedPos>(["start"]), length: 0 });
 
         const reached = new Map<string, number>();
         let longestSoFar = 0;
-        let iterations = 0;
 
         while (!frontier.isEmpty()) {
-            iterations++;
             const path = frontier.pull()!;
-
-            if (iterations % 1000_000 === 0) {
-                let newT = new Date();
-                console.log(`iteration ${iterations} took ${(newT-lastT)/1000} seconds`);
-                lastT = newT;
-               // console.log(`exploring ${path.head}, length ${path.length}, visited ${path.visited.size}: ${JSON.stringify(Array.from(path.visited))}`)
-            }
 
             if (path.head === hash(this.goal)) {
                 if (path.length > longestSoFar) {
@@ -106,13 +96,6 @@ export class HikingMap {
                 }
                 continue;
             }
-
-            const pathKey = Array.from(path.visited).sort().toString() + ":" + path.head;
-            const pathLengthLastTime = reached.get(pathKey)
-            if (pathLengthLastTime !== undefined && pathLengthLastTime > path.length) {
-                continue;
-            }
-            reached.set(pathKey, path.length);
 
             for (const neighbour of this.digraph.get(path.head)!) {
                 if (!path.visited.has(neighbour.destination)) {
