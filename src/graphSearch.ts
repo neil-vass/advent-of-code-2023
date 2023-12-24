@@ -9,6 +9,24 @@
 // Adrian Mejia walks through how priority queue's useful, and how to implement it using an array.
 // https://adrianmejia.com/priority-queue-data-structure-and-heaps-time-complexity-javascript-implementation/
 
+// Stack, used by depth first search.
+export class Stack<T> {
+    private readonly items = new Array<T>();
+
+    isEmpty() {
+        return this.items.length === 0;
+    }
+
+    push(elem: T) {
+        this.items.push(elem);
+    }
+
+    pull() {
+        if (this.items.length === 0) return null;
+        return this.items.pop()!;
+    }
+}
+
 
 // FIFO queue, used by breadthFirstSearch.
 export class FifoQueue<T> {
