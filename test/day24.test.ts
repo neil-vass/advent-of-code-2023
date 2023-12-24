@@ -16,8 +16,8 @@ beforeEach(() => {
 describe("Part 1", () => {
     it("Parses input lines", () => {
         const line = "19, 13, 30 @ -2,  1, -2";
-        const position = {x: 19, y: 13, z: 30};
-        const velocity = {x: -2, y:  1, z: -2};
+        const position = {x: 19n, y: 13n, z: 30n};
+        const velocity = {x: -2n, y:  1n, z: -2n};
         expect(day24.parseHailstone(line)).toStrictEqual(new day24.Hailstone(position, velocity));
     });
 
@@ -25,16 +25,16 @@ describe("Part 1", () => {
         const a = day24.parseHailstone("19, 13, 30 @ -2, 1, -2");
         const b = day24.parseHailstone("18, 19, 22 @ -1, -1, -2");
         const intersection = day24.pathsCross(a, b);
-        expect(intersection.x).toBeCloseTo(14.333);
-        expect(intersection.y).toBeCloseTo(15.333);
+        expect(intersection.x).toBe(14n)
+        expect(intersection.y).toBe(15n);
     });
 
     it("Predicts paths cross in future", () => {
         const a = day24.parseHailstone("19, 13, 30 @ -2, 1, -2");
         const b = day24.parseHailstone("20, 25, 34 @ -2, -2, -4");
         const intersection = day24.pathsCross(a, b);
-        expect(intersection.x).toBeCloseTo(11.667);
-        expect(intersection.y).toBeCloseTo(16.667);
+        expect(intersection.x).toBe(11n);
+        expect(intersection.y).toBe(16n);
         expect(day24.pathsCrossInFuture(a, b, intersection)).toBe(true);
     });
 
@@ -50,14 +50,12 @@ describe("Part 1", () => {
         const a = day24.parseHailstone("18, 19, 22 @ -1, -1, -2");
         const b = day24.parseHailstone("20, 25, 34 @ -2, -2, -4");
         const intersection = day24.pathsCross(a, b);
-        expect(intersection.x).toBe(-Infinity);
-        expect(intersection.y).toBe(-Infinity);
-        expect(day24.pathsCrossInFuture(a, b, intersection)).toBe(false);
+        expect(intersection).toBeNull();
     });
 
     it("Decides whether pairs intersect within test area", async () => {
-        const testAreaMin = {x: 7, y: 7, z: 0};
-        const testAreaMax = {x: 27, y: 27, z: 0};
+        const testAreaMin = {x: 7n, y: 7n, z: 0n};
+        const testAreaMax = {x: 27n, y: 27n, z: 0n};
         expect(await day24.intersectionsWithinTestArea(testAreaMin, testAreaMax, exampleLines)).toBe(2);
     });
 
