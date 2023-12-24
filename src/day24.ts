@@ -3,6 +3,10 @@ import {Sequence} from "./sequence.js";
 
 export type Vector = {x: number, y: number, z: number};
 
+export class Hailstone {
+    constructor(readonly position: Vector, readonly velocity: Vector) {}
+}
+
 export function parseHailstone(s: string) {
     const m = s.match(/^(-?\d+),\s+(-?\d+),\s+(-?\d+)\s+@\s+(-?\d+),\s+(-?\d+),\s+(-?\d+)$/);
     if (m === null) throw new Error(`Unexpected line format: ${s}`);
@@ -12,17 +16,69 @@ export function parseHailstone(s: string) {
     return new Hailstone(position, velocity);
 }
 
-export class Hailstone {
-    constructor(readonly position: Vector, readonly velocity: Vector) {}
+export function pathsCross(a: Hailstone, b: Hailstone): Vector {
+    // https://en.wikipedia.org/wiki/Line%E2%80%93line_intersection
+    const [x1, y1] = [a.position.x, a.position.y];
+    const [x2, y2] = [a.position.x + a.velocity.x, a.position.y + a.velocity.y];
+
+    const [x3, y3] = [b.position.x, b.position.y];
+    const [x4, y4] = [b.position.x + b.velocity.x, b.position.y + b.velocity.y];
+
+    const Px = ((x1*y2 - y1*x2)*(x3 - x4) - (x1 - x2)*(x3*y4 - y3*x4)) /
+                    ((x1 - x2)*(y3 - y4) - (y1 - y2)*(x3 - x4));
+
+    const Py = ((x1*y2 - y1*x2)*(y3 - y4) - (y1 - y2)*(x3*y4 - y3*x4)) /
+                    ((x1 - x2)*(y3 - y4) - (y1 - y2)*(x3 - x4));
+
+    return {x: Px, y: Py, z: 0}
+}
+
+export function pathsCrossInFuture(a: Hailstone, b: Hailstone, intersection: Vector) {
+    // Parallel paths will never cross.
+    if (intersection.x === Infinity || intersection.x === -Infinity) return false;
+
+    if (intersection.x > a.position.x && a.velocity.x <= 0) return false;
+    if (intersection.x < a.position.x && a.velocity.x >= 0) return false;
+
+    if (intersection.x > b.position.x && b.velocity.x <= 0) return false;
+    if (intersection.x < b.position.x && b.velocity.x >= 0) return false;
+
+    if (intersection.y > a.position.y && a.velocity.y <= 0) return false;
+    if (intersection.y < a.position.y && a.velocity.y >= 0) return false;
+
+    if (intersection.y > b.position.y && b.velocity.y <= 0) return false;
+    if (intersection.y < b.position.y && b.velocity.y >= 0) return false;
+
+    return true;
 }
 
 
-export function fn(filepath: string) {
-    return "Hello, World!";
+export async function intersectionsWithinTestArea(testAreaMin: Vector, testAreaMax: Vector, lines: Sequence<string>) {
+    const hailstones = await lines.map(parseHailstone).toArray();
+
+    const isWithinArea = (v: Vector) => (v.x >= testAreaMin.x && v.x <= testAreaMax.x) &&
+                                        (v.y >= testAreaMin.y && v.y <= testAreaMax.y);
+
+    let count = 0;
+    for (let i=0; i < hailstones.length-1; i++) {
+       for (let j=i+1; j < hailstones.length; j++) {
+           const [a, b] = [hailstones[i], hailstones[j]];
+           const intersection = pathsCross(a, b);
+           if (isWithinArea(intersection) && pathsCrossInFuture(a, b, intersection)) count++;
+       }
+    }
+
+    return count;
+}
+
+export async function solvePart1(min: number, max: number, lines: Sequence<string>) {
+    const testAreaMin = {x: min, y: min, z: 0};
+    const testAreaMax = {x: max, y: max, z: 0};
+    return intersectionsWithinTestArea(testAreaMin, testAreaMax, lines);
 }
 
 // If this script was invoked directly on the command line:
 if (`file://${process.argv[1]}` === import.meta.url) {
-    const filepath = "./data/day24.txt";
-    console.log(fn(filepath));
+    const lines = linesFromFile("./data/day24.txt");
+    console.log(await solvePart1(200000000000000, 400000000000000, lines));
 }
