@@ -25,17 +25,17 @@ describe("Part 1", () => {
         const a = day24.parseHailstone("19, 13, 30 @ -2, 1, -2");
         const b = day24.parseHailstone("18, 19, 22 @ -1, -1, -2");
         const intersection = day24.pathsCross(a, b);
-        expect(intersection.x).toBe(14n)
-        expect(intersection.y).toBe(15n);
+        expect(intersection?.x).toBe(14n)
+        expect(intersection?.y).toBe(15n);
     });
 
     it("Predicts paths cross in future", () => {
         const a = day24.parseHailstone("19, 13, 30 @ -2, 1, -2");
         const b = day24.parseHailstone("20, 25, 34 @ -2, -2, -4");
         const intersection = day24.pathsCross(a, b);
-        expect(intersection.x).toBe(11n);
-        expect(intersection.y).toBe(16n);
-        expect(day24.pathsCrossInFuture(a, b, intersection)).toBe(true);
+        expect(intersection?.x).toBe(11n);
+        expect(intersection?.y).toBe(16n);
+        expect(day24.pathsCrossInFuture(a, b, intersection!)).toBe(true);
     });
 
     it("Predicts paths cross in past", () => {
@@ -43,7 +43,7 @@ describe("Part 1", () => {
         const a = day24.parseHailstone("20, 25, 34 @ -2, -2, -4");
         const b = day24.parseHailstone("20, 19, 15 @ 1, -5, -3");
         const intersection = day24.pathsCross(a, b);
-        expect(day24.pathsCrossInFuture(a, b, intersection)).toBe(false);
+        expect(day24.pathsCrossInFuture(a, b, intersection!)).toBe(false);
     });
 
     it("Identifies parallel paths", () => {
@@ -60,7 +60,7 @@ describe("Part 1", () => {
     });
 
     it("Solves example", async () => {
-        expect(await day24.solvePart1(7, 27, exampleLines)).toBe(2);
+        expect(await day24.solvePart1(7n, 27n, exampleLines)).toBe(2);
     });
 
 });
