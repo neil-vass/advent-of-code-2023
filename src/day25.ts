@@ -100,7 +100,7 @@ export class Apparatus {
     findMinCut(monteCarloIterations=100, randomNumberGenerator=seedrandom()) {
         // Karger’s algorithm: keep combining vertices until there are just 2 left.
         // It's a monte carlo algorithm... so this will do things in a different order each time it's called.
-        // For better testability we could use a seeded random number generator, might come back to that.
+        // For better testability you can pass in a seeded randomNumberGenerator.
         let bestResultSoFar = { numWiresToCut: Infinity, groupSizes: new Array<number> };
 
         for (let i=0; i< monteCarloIterations; i++) {
