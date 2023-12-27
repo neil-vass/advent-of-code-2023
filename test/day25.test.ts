@@ -45,7 +45,7 @@ describe("Functionality with simple examples", () => {
         const collection = [1, 2];
         const generator = seedrandom("String for seed to get same series");
         const results = Array.from({length: 10}, () => day25.choose(collection, generator));
-        expect(results).toStrictEqual([2, 2, 2, 1, 2, 1, 2, 1, 2, 1]);
+        expect(results).toStrictEqual([2, 1, 1, 2, 1, 2, 1, 1, 1, 2]);
     });
 
     it("Choosing from empty collection gives undefined", () => {
@@ -90,9 +90,10 @@ describe("Functionality with simple examples", () => {
         ]);
         const apparatus = await day25.Apparatus.buildFromDescription(lines);
 
-        const monteCarloIterations = 3;
+        const monteCarloIterations = 10;
         const randomNumberGenerator = seedrandom("String for seed to get same series");
-        expect(apparatus.groupSizesAfterMinCut(monteCarloIterations, randomNumberGenerator)).toStrictEqual([1, 4]);
+        const result = apparatus.findMinCut(monteCarloIterations, randomNumberGenerator);
+        expect(result).toStrictEqual({ numWiresToCut: 2, groupSizes: [1, 4] });
     });
 });
 
@@ -112,7 +113,7 @@ describe("Solves example graph from Wikipedia", () => {
             "w: v x y z",
             "x: v w y z a",
             "y: v w x z b",
-            "z: v w x y z",
+            "z: v w x y c",
         ]);
         twoPentagonsLightlyConnected = await day25.Apparatus.buildFromDescription(lines);
     })
@@ -125,8 +126,11 @@ describe("Solves example graph from Wikipedia", () => {
         expect(twoPentagonsLightlyConnected.connectedGroupSizes()).toStrictEqual([5, 5]);
     });
 
-    it("Identifies which wires to cut", () => {
-        expect(twoPentagonsLightlyConnected.groupSizesAfterMinCut(2)).toStrictEqual([5, 5]);
+    it("Identifies minimum cut and resulting group sizes", () => {
+        const iterations = 10;
+        const rng = seedrandom("String for seed to get same series");
+        const result = twoPentagonsLightlyConnected.findMinCut(iterations, rng);
+        expect(result).toStrictEqual({ numWiresToCut: 3, groupSizes: [5, 5] });
     });
 });
 
@@ -146,8 +150,6 @@ describe("Solves part 1 example", () => {
     });
 
     it("Identifies which wires to cut to make 2 separate groups", async () => {
-        const apparatus = await day25.Apparatus.buildFromDescription(exampleLines);
-        expect(apparatus.groupSizesAfterMinCut()).toStrictEqual([["hfx", "pzl"], ["bvb", "cmg"], ["nvd", "jqt"]]);
-        expect(apparatus.connectedGroupSizes()).toStrictEqual([6, 9]);
+        expect(await day25.solvePart1(exampleLines)).toBe(54);
     });
 });
