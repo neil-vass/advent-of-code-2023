@@ -1,6 +1,7 @@
 import {expect, describe, it, beforeEach} from "vitest";
 import * as day25 from "../src/day25.js";
 import {Sequence} from "../src/sequence.js";
+import seedrandom from "seedrandom";
 
 let exampleLines: Sequence<string>;
 beforeEach(() => {
@@ -38,6 +39,13 @@ describe("Functionality with simple examples", () => {
         expect(ones + twos).toBe(numTrials);
         expect(ones).toBeGreaterThan(minCountForEachOption);
         expect(twos).toBeGreaterThan(minCountForEachOption);
+    });
+
+    it("Can seed random number generator to get the same series repeatably", () => {
+        const collection = [1, 2];
+        const generator = seedrandom("String for seed to get same series");
+        const results = Array.from({length: 10}, () => day25.choose(collection, generator));
+        expect(results).toStrictEqual([2, 2, 2, 1, 2, 1, 2, 1, 2, 1]);
     });
 
     it("Choosing from empty collection gives undefined", () => {
@@ -81,7 +89,10 @@ describe("Functionality with simple examples", () => {
             "e: a d",
         ]);
         const apparatus = await day25.Apparatus.buildFromDescription(lines);
-        expect(apparatus.groupSizesAfterMinCut()).toStrictEqual([1, 4]);
+
+        const monteCarloIterations = 3;
+        const randomNumberGenerator = seedrandom("String for seed to get same series");
+        expect(apparatus.groupSizesAfterMinCut(monteCarloIterations, randomNumberGenerator)).toStrictEqual([1, 4]);
     });
 });
 

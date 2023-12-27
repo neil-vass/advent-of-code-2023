@@ -1,6 +1,7 @@
 import {linesFromFile} from "./helpers.js";
 import {Sequence} from "./sequence.js";
 import {Stack} from "./graphSearch.js";
+import seedrandom from "seedrandom";
 
 type Component = string;
 
@@ -12,9 +13,9 @@ export function parseComponentConnections(s: string): [Component, Array<Componen
     return [thisComponent, connections];
 }
 
-export function choose<T>(collection: Iterable<T>) {
+export function choose<T>(collection: Iterable<T>, randomNumberGenerator=seedrandom()) {
     const arr = [...collection];
-    const idx = Math.floor(Math.random() * arr.length);
+    const idx = Math.floor(randomNumberGenerator() * arr.length);
     return arr[idx];
 }
 
@@ -87,7 +88,7 @@ export class Apparatus {
         return new Map([...this.graph.entries()].map(([k,v]) => [k, Array.from(v)]));
     }
 
-    groupSizesAfterMinCut(monteCarloIterations=100) {
+    groupSizesAfterMinCut(monteCarloIterations=100, randomNumberGenerator=seedrandom()) {
         // Karger’s algorithm: keep combining vertices until there are just 2 left.
         // It's a monte carlo algorithm... so this will do things in a different order each time it's called.
         // For better testability we could use a seeded random number generator, might come back to that.
@@ -100,24 +101,23 @@ export class Apparatus {
 
             while(contractedGraph.size > 2) {
                 // Pick 2 nodes to merge. a=Choose from map keys, b=choose from a's connections.
-                const a = choose(contractedGraph.keys());
+                const a = choose(contractedGraph.keys(), randomNumberGenerator);
                 const linksFromA = contractedGraph.get(a)!;
-                const b = choose(linksFromA);
+                const b = choose(linksFromA, randomNumberGenerator);
 
                 // Merge: replace all references to b with a.
                 const linksFromAWithoutB = linksFromA.filter(link => link !== b);
                 mergedEdgesCount += linksFromA.length -  linksFromAWithoutB.length;
                 contractedGraph.set(a, linksFromAWithoutB);
-                contractedGraph.delete(b);
 
-                for (const [otherComponent, otherComponentsLinks] of contractedGraph.entries()) {
-                    let linkToBIdx = otherComponentsLinks.indexOf(b);
-                    while (linkToBIdx !== -1) {
-                        otherComponentsLinks.splice(linkToBIdx, 1, a);
-                        linksFromA.push(otherComponent);
-                        linkToBIdx = otherComponentsLinks.indexOf(b);
-                    }
+                for (const otherComponent of contractedGraph.get(b)!) {
+                    if (otherComponent === a) continue;
+                    const otherComponentsLinks = contractedGraph.get(otherComponent)!;
+                    const linkToBIndex = otherComponentsLinks.indexOf(b);
+                    otherComponentsLinks.splice(linkToBIndex, 1, a);
+                    linksFromA.push(otherComponent);
                 }
+                contractedGraph.delete(b);
 
                 // Record the merger.
                 let mergedNodes = mergers.get(a)!;
