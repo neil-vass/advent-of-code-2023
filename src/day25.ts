@@ -1,12 +1,14 @@
 import {linesFromFile} from "./helpers.js";
 import {Sequence} from "./sequence.js";
-import {FifoQueue, Graph, Stack} from "./graphSearch.js";
+import {Stack} from "./graphSearch.js";
 
 type Component = string;
 
-export function parseComponentConnections(s: string): [Component, Set<Component>] {
+const ascending = (left: number, right: number) => left - right;
+
+export function parseComponentConnections(s: string): [Component, Array<Component>] {
     const [thisComponent, connectionsStr] = s.split(": ");
-    const connections = new Set(connectionsStr.split(" "));
+    const connections = connectionsStr.split(" ");
     return [thisComponent, connections];
 }
 
@@ -17,7 +19,7 @@ export function choose<T>(collection: Iterable<T>) {
 }
 
 export class Apparatus {
-    private constructor(readonly graph: Map<Component, Set<Component>>) {
+    private constructor(readonly graph: Map<Component, Array<Component>>) {
         this.insertBacklinks();
     }
 
@@ -32,9 +34,11 @@ export class Apparatus {
             for (const linked of connections) {
                 const linkedEntry = this.graph.get(linked);
                 if (linkedEntry === undefined) {
-                    this.graph.set(linked, new Set([thisComponent]));
+                    this.graph.set(linked, [thisComponent]);
                 } else {
-                    linkedEntry.add(thisComponent);
+                    if (linkedEntry.indexOf(thisComponent) === -1) {
+                        linkedEntry.push(thisComponent);
+                    }
                 }
             }
         }
@@ -73,37 +77,66 @@ export class Apparatus {
     }
 
     cutWire(a: Component, b: Component) {
-        this.graph.get(a)?.delete(b);
-        this.graph.get(b)?.delete(a);
+        const aToB = this.graph.get(a)!.indexOf(b);
+        const bToA = this.graph.get(b)!.indexOf(a);
+        this.graph.get(a)!.splice(aToB, 1);
+        this.graph.get(b)!.splice(bToA, 1);
     }
 
-    cutsToCauseDisconnect(knownMinCutsRequired=3) {
+    copyGraph() {
+        return new Map([...this.graph.entries()].map(([k,v]) => [k, Array.from(v)]));
+    }
+
+    groupSizesAfterMinCut(monteCarloIterations=100) {
         // Karger’s algorithm: keep combining vertices until there are just 2 left.
         // It's a monte carlo algorithm... so this will do things in a different order each time it's called.
         // For better testability we could use a seeded random number generator, might come back to that.
-        let cuts = new Array<[Component, Component]>();
-        while (cuts.length !== knownMinCutsRequired) {
-            const contractedGraph = new Map<Component, Set<Component>>(JSON.parse(JSON.stringify(Array.from(this.graph))));
+        let bestResultSoFar = { mergedEdgesCount: 0, groupSizes: new Array<number> };
+
+        for (let i=0; i< monteCarloIterations; i++) {
+            const contractedGraph = this.copyGraph();
+            const mergers = new Map(Array.from(contractedGraph.keys(), (k) => [k, new Array<Component>()]));
+            let mergedEdgesCount = 0;
 
             while(contractedGraph.size > 2) {
                 // Pick 2 nodes to merge. a=Choose from map keys, b=choose from a's connections.
                 const a = choose(contractedGraph.keys());
-                console.log(`a is ${a}, choose from ${JSON.stringify(contractedGraph.get(a))}`)
-                const b = choose(contractedGraph.get(a)!);
+                const linksFromA = contractedGraph.get(a)!;
+                const b = choose(linksFromA);
 
                 // Merge: replace all references to b with a.
-                contractedGraph.get(a)!.delete(b);
-                for (const [c, links] of contractedGraph.entries()) {
-                    if (links.has(b)) {
-                        links.delete(b);
-                        links.add(a)
+                const linksFromAWithoutB = linksFromA.filter(link => link !== b);
+                mergedEdgesCount += linksFromA.length -  linksFromAWithoutB.length;
+                contractedGraph.set(a, linksFromAWithoutB);
+                contractedGraph.delete(b);
+
+                for (const [otherComponent, otherComponentsLinks] of contractedGraph.entries()) {
+                    let linkToBIdx = otherComponentsLinks.indexOf(b);
+                    while (linkToBIdx !== -1) {
+                        otherComponentsLinks.splice(linkToBIdx, 1, a);
+                        linksFromA.push(otherComponent);
+                        linkToBIdx = otherComponentsLinks.indexOf(b);
                     }
                 }
-                contractedGraph.delete(b);
+
+                // Record the merger.
+                let mergedNodes = mergers.get(a)!;
+                mergedNodes.push(b);
+                if (mergers.has(b)) {
+                    mergedNodes = mergedNodes.concat(mergers.get(b)!);
+                }
+                mergers.set(a, mergedNodes);
+                mergers.delete(b);
             }
-            cuts = [...contractedGraph.keys()].map(key => [key, [...contractedGraph.get(key)!][0]])
+
+            if (mergedEdgesCount > bestResultSoFar.mergedEdgesCount) {
+                const groupSizes = Array.from(mergers.values(), (v) => v.length+1);
+                groupSizes.sort(ascending);
+                bestResultSoFar = { mergedEdgesCount, groupSizes };
+            }
         }
-        return cuts;
+
+        return bestResultSoFar.groupSizes;
     }
 }
 
