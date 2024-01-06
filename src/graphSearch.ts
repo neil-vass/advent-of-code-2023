@@ -29,14 +29,12 @@ export class Stack<T> {
 
 
 // FIFO queue, used by breadthFirstSearch.
-// This performs poorly with large, frequently-changing collections -
-// array.shift needs to rearrange the underlying content frequently.
-// A library version designed to perform well is a better choice.
 export class FifoQueue<T> {
-    private readonly items = new Array<T>();
+    private items = new Array<T>();
+    private head = 0;
 
     isEmpty() {
-        return this.items.length === 0;
+        return this.head === this.items.length;
     }
 
     push(elem: T) {
@@ -44,8 +42,14 @@ export class FifoQueue<T> {
     }
 
     pull() {
-        if (this.items.length === 0) return null;
-        return this.items.shift()!;
+        if (this.isEmpty()) return null;
+        const elem = this.items[this.head];
+        this.head++;
+        if(this.head > 1_000_000) {
+            this.items = this.items.slice(this.head);
+            this.head = 0;
+        }
+        return elem;
     }
 }
 
