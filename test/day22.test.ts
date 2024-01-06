@@ -10,7 +10,6 @@ describe("Part 1", () => {
         expect(brick.xyPositions()).toStrictEqual(["(1,0)","(1,1)","(1,2)"]);
         expect(brick.zHeightOfBase()).toBe(1);
         expect(brick.zHeightOfTop()).toBe(1);
-        expect(brick.verticalSize()).toBe(1);
     });
 
     it("Stacks 1 brick", async () => {
@@ -80,5 +79,49 @@ describe("Part 1", () => {
         const stack = await day22.Stack.buildFromDescription(lines);
         expect(stack.bricks.at(-1)!.zHeightOfTop()).toBe(6);
         expect(stack.safeDisintegrationCount()).toBe(5);
+    });
+});
+
+describe("Part 2", () => {
+    it("Solves simple case", async () => {
+        const lines = new Sequence([
+            "1,0,1~1,2,1",
+            "0,0,2~2,0,2",
+        ]);
+        const stack = await day22.Stack.buildFromDescription(lines);
+        const brickA = stack.bricks.at(0)!
+
+        expect(stack.numBricksThatWouldFallIfDisintegrated(brickA)).toBe(1);
+    });
+
+    it("Finds answers from example", async () => {
+        const lines = new Sequence([
+            "1,0,1~1,2,1",
+            "0,0,2~2,0,2",
+            "0,2,3~2,2,3",
+            "0,0,4~0,2,4",
+            "2,0,5~2,2,5",
+            "0,1,6~2,1,6",
+            "1,1,8~1,1,9",
+        ]);
+        const stack = await day22.Stack.buildFromDescription(lines);
+        const brickA = stack.bricks.at(0)!
+        const brickF = stack.bricks.at(-2)!
+
+        expect(stack.numBricksThatWouldFallIfDisintegrated(brickA)).toBe(6);
+        expect(stack.numBricksThatWouldFallIfDisintegrated(brickF)).toBe(1);
+    });
+
+    it("Solves example", async () => {
+        const lines = new Sequence([
+            "1,0,1~1,2,1",
+            "0,0,2~2,0,2",
+            "0,2,3~2,2,3",
+            "0,0,4~0,2,4",
+            "2,0,5~2,2,5",
+            "0,1,6~2,1,6",
+            "1,1,8~1,1,9",
+        ]);
+        expect(await day22.solvePart2(lines)).toBe(7);
     });
 });

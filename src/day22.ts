@@ -1,6 +1,6 @@
 import {linesFromFile} from "./helpers.js";
 import {Sequence} from "./sequence.js";
-
+import {FifoQueue} from "./graphSearch.js";
 
 export type Vector = { x: number, y: number, z: number };
 export type hashedXY = string;
@@ -37,10 +37,6 @@ export class Brick {
 
     zHeightOfTop() {
         return Math.max(this.from.z, this.to.z);
-    }
-
-    verticalSize() {
-        return Math.abs(this.from.z - this.to.z) + 1;
     }
 
     fallTo(supportHeight: number) {
@@ -107,6 +103,26 @@ export class Stack {
         return count;
     }
 
+    numBricksThatWouldFallIfDisintegrated(brickToDisintegrate: Brick) {
+        const bricksToCheck = new FifoQueue<Brick>();
+        brickToDisintegrate.supporting.forEach(b => bricksToCheck.push(b));
+
+        const bricksAlreadyChecked = new Set<Brick>();
+        const droppedBricks = new Set([brickToDisintegrate]);
+
+        while (!bricksToCheck.isEmpty()) {
+            const brick = bricksToCheck.pull()!;
+            if (bricksAlreadyChecked.has(brick)) continue;
+
+            const remainingSupports = [...brick.restingOn].filter(b => !droppedBricks.has(b)).length;
+            if (remainingSupports === 0) {
+                droppedBricks.add(brick);
+                brick.supporting.forEach(b => bricksToCheck.push(b));
+                bricksAlreadyChecked.add(brick);
+            }
+        }
+        return droppedBricks.size -1;
+    }
 
     static async buildFromDescription(lines: Sequence<string>) {
         const stack = new Stack();
@@ -119,9 +135,13 @@ export class Stack {
     }
 }
 
+export async function solvePart2(lines: Sequence<string>) {
+    const stack = await Stack.buildFromDescription(lines);
+    return stack.bricks.reduce((acc, brick) => acc + stack.numBricksThatWouldFallIfDisintegrated(brick), 0);
+}
+
 // If this script was invoked directly on the command line:
 if (`file://${process.argv[1]}` === import.meta.url) {
     const lines = linesFromFile("./data/day22.txt");
-    const stack = await Stack.buildFromDescription(lines);
-    console.log(stack.safeDisintegrationCount());
+    console.log(await solvePart2(lines));
 }
