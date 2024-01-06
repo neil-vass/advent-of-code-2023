@@ -1,39 +1,6 @@
 import {linesFromFile} from "./helpers.js";
 import {Sequence} from "./sequence.js";
-import fs from "fs";
-
-let methodCalls = 0;
-let cacheHits = 0;
-// I've tried doing this using a decorator, to mimic the Python functools "@cache" decorator.
-// That's because:
-// 1. It's neater code (method can just do its work, with caching logic elsewhere)
-// 2. I'm keen to learn lots of TypeScript (haven't seen decorators before).
-// This is using the official decorators from TypeScript 5, not the experimental ones available
-// in earlier versions.
-// See https://devblogs.microsoft.com/typescript/announcing-typescript-5-0/#decorators
-function memoize(decoratedMethod: Function, context: ClassMethodDecoratorContext) {
-    const cacheCollection = new WeakMap<object, Map<string, any>>();
-
-    if (context.kind === "method") {
-        return function (this: any, ...args: any[]) {
-            methodCalls++;
-            if (!cacheCollection.has(this)) {
-                cacheCollection.set(this, new Map<string, any>());
-            }
-            const cache = cacheCollection.get(this)!;
-            const hashKey = JSON.stringify(args);
-
-            if (cache.has(hashKey)) {
-                cacheHits++;
-                return cache.get(hashKey);
-            } else {
-                const result = decoratedMethod.apply(this, args);
-                cache.set(hashKey, result);
-                return result;
-            }
-        }
-    }
-}
+import {FifoQueue, Graph} from "./graphSearch.js";
 
 class BetterSet extends Set<number> {
     union(other: BetterSet)  {
@@ -42,6 +9,10 @@ class BetterSet extends Set<number> {
 }
 
 type Pos = { x: number, y: number };
+type HashedPos = string;
+
+const hash = (pos: Pos) : HashedPos => JSON.stringify(pos);
+const unhash = (s: HashedPos) : Pos => JSON.parse(s);
 
 export class Garden {
     private infiniteBounds = false;
@@ -71,24 +42,31 @@ export class Garden {
         return directions.filter(d => this.isPlot(d));
     }
 
-    @memoize
-    private plotsReachable(from: Pos, steps: number): BetterSet {
-        const hash = (pos: Pos) => (pos.x * 10000) + pos.y;
-        if (steps === 1) {
-            return new BetterSet(this.neighbours(from).map(hash));
+
+    // Adapted from graphSearch.ts
+    numPlotsReachable(totalSteps: number, start=this.start) {
+        let reachablePlotCount = 0;
+        const frontier = new FifoQueue<{ pos: Pos, steps: number }>();
+        const visited = new Set<HashedPos>();
+
+        frontier.push({ pos: start, steps: 0 });
+        visited.add(hash(start));
+
+        while (!frontier.isEmpty()) {
+            const current = frontier.pull()!;
+            if (current.steps > totalSteps) continue;
+            if (current.steps % 2 === totalSteps % 2) reachablePlotCount++;
+
+            for (const n of this.neighbours(current.pos)) {
+                const hashedNeighbour = hash(n);
+                if (!visited.has(hashedNeighbour)) {
+                    frontier.push({ pos: n, steps: current.steps +1 });
+                    visited.add(hashedNeighbour);
+                }
+            }
         }
 
-        let result = new BetterSet();
-        for (const n of this.neighbours(from)) {
-            result.union(this.plotsReachable(n, steps-1));
-        }
-        return result;
-    }
-
-    numPlotsReachable(steps: number) {
-        const result = this.plotsReachable(this.start, steps);
-        console.log(`${steps}: method calls: ${methodCalls}, cache hits: ${cacheHits}`);
-        return result.size;
+        return reachablePlotCount;
     }
 
     static async buildFromDescription(lines: Sequence<string>) {
@@ -127,5 +105,6 @@ export async function solvePart2(lines: Sequence<string>, steps=26501365) {
 
 // If this script was invoked directly on the command line:
 if (`file://${process.argv[1]}` === import.meta.url) {
-
+    const lines = linesFromFile("./data/day21.txt");
+    console.log(await solvePart1(lines));
 }
