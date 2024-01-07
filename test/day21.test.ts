@@ -53,12 +53,12 @@ describe("Part 2: infinite bounds", () => {
         expect(garden.numPlotsReachable(50)).toBe(1594);
     });
 
-    it.skip("Moves 100 steps in infinite garden", async () => {
+    it("Moves 100 steps in infinite garden", async () => {
         const garden = await day21.Garden.withInfiniteBounds(exampleLines);
         expect(garden.numPlotsReachable(100)).toBe(6536);
     });
 
-    it.skip("Moves 500 steps in infinite garden", async () => {
+    it("Moves 500 steps in infinite garden", async () => {
         const garden = await day21.Garden.withInfiniteBounds(exampleLines);
         expect(garden.numPlotsReachable(500)).toBe(167004);
     });

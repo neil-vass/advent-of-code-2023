@@ -106,5 +106,20 @@ export async function solvePart2(lines: Sequence<string>, steps=26501365) {
 // If this script was invoked directly on the command line:
 if (`file://${process.argv[1]}` === import.meta.url) {
     const lines = linesFromFile("./data/day21.txt");
-    console.log(await solvePart1(lines));
+    const garden = await Garden.withInfiniteBounds(lines);
+
+    for (let i=65; i<1000; i+=131) {
+        console.log(`${i}, ${garden.numPlotsReachable(i)}`);
+    }
+
+    // Off to Google sheets, where we find we can use:
+    // x: (i-65) / 131  <--- (size of regular increase ... it's every plot-width after the first 65 steps)
+    // init: value for 65 steps
+    // growth: 2nd derivative of f(x) ... the increase increases at a constant rate
+    // const: the first increase is growth+this const
+    //
+    // in a formula:
+    // =init+((x*(x+1)/2)*growth)+(x*const)
+    //
+    // and can use this with x = (target-65) / 131.
 }
