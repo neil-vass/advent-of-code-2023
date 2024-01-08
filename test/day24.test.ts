@@ -25,16 +25,14 @@ describe("Part 1", () => {
         const a = day24.parseHailstone("19, 13, 30 @ -2, 1, -2");
         const b = day24.parseHailstone("18, 19, 22 @ -1, -1, -2");
         const intersection = day24.pathsCross(a, b);
-        expect(intersection?.x).toBe(14n)
-        expect(intersection?.y).toBe(15n);
+        expect(intersection).toStrictEqual({x: 14n, y: 15n, z: expect.any(BigInt)});
     });
 
     it("Predicts paths cross in future", () => {
         const a = day24.parseHailstone("19, 13, 30 @ -2, 1, -2");
         const b = day24.parseHailstone("20, 25, 34 @ -2, -2, -4");
         const intersection = day24.pathsCross(a, b);
-        expect(intersection?.x).toBe(11n);
-        expect(intersection?.y).toBe(16n);
+        expect(intersection).toStrictEqual({x: 11n, y: 16n, z: expect.any(BigInt)});
         expect(day24.pathsCrossInFuture(a, b, intersection!)).toBe(true);
     });
 
@@ -62,5 +60,19 @@ describe("Part 1", () => {
     it("Solves example", async () => {
         expect(await day24.solvePart1(7n, 27n, exampleLines)).toBe(2);
     });
+});
 
+describe("Part 2", () => {
+    it("Predicts intersections in 3D", () => {
+        const hailstone = day24.parseHailstone("20, 19, 15 @ 1, -5, -3");
+        const rock = day24.parseRock("24, 13, 10 @ -3, 1, 2");
+        const intersection = day24.pathsCross3D(hailstone, rock);
+        expect(intersection).toStrictEqual({ time: 1n, pos: { x: 21n, y: 14n, z: 12n }});
+    });
+
+    it("Finds path for rock", async () => {
+        const rock = await day24.findPathForRock(exampleLines);
+        const expectedRock = day24.parseRock("24, 13, 10 @ -3, 1, 2");
+        expect(rock).toStrictEqual(expectedRock);
+    });
 });
