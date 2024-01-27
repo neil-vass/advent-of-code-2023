@@ -44,6 +44,7 @@ export class FifoQueue<T> {
     pull() {
         if (this.isEmpty()) return null;
         const elem = this.items[this.head];
+        delete this.items[this.head];
         this.head++;
         if(this.head > 1_000_000) {
             this.items = this.items.slice(this.head);
