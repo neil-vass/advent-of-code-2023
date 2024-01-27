@@ -11,8 +11,6 @@ export class Hailstone {
     constructor(readonly position: Vector, readonly velocity: Vector) {}
 }
 
-export class Rock extends Hailstone {}
-
 export function parseHailstone(s: string) {
     const m = s.match(/^(-?\d+),\s+(-?\d+),\s+(-?\d+)\s+@\s+(-?\d+),\s+(-?\d+),\s+(-?\d+)$/);
     if (m === null) throw new Error(`Unexpected line format: ${s}`);
@@ -21,8 +19,6 @@ export function parseHailstone(s: string) {
     const velocity = {x: BigInt(xvel), y: BigInt(yvel),  z: BigInt(zvel)};
     return new Hailstone(position, velocity);
 }
-
-export const parseRock = parseHailstone;
 
 export function pathsCross(a: Hailstone, b: Hailstone): Vector | null {
     // https://en.wikipedia.org/wiki/Line%E2%80%93line_intersection
@@ -86,40 +82,73 @@ export function pathsCross3D(a: Hailstone, b: Hailstone) {
     const intersection = pathsCross(a, b);
     if (intersection === null) return null;
 
-    let time = 0n;
+    // When does a get to that xy intersection?
+    let a_time = 0n;
     if (a.velocity.x !== 0n) {
-        time = (intersection.x - a.position.x) / a.velocity.x;
+        a_time = (intersection.x - a.position.x) / a.velocity.x;
     } else {
-        time = (intersection.y - a.position.y) / a.velocity.y;
+        a_time = (intersection.y - a.position.y) / a.velocity.y;
     }
 
-    const az = a.position.z + (a.velocity.z * time);
-    const bz = b.position.z + (b.velocity.z * time);
+    // And what z does a have when it gets to that xy intersection?
+    const az = a.position.z + (a.velocity.z * a_time);
+
+    // Next: When does b get to that xy intersection?
+    let b_time = 0n;
+    if (b.velocity.x !== 0n) {
+        b_time = (intersection.x - b.position.x) / b.velocity.x;
+    } else {
+        b_time = (intersection.y - b.position.y) / b.velocity.y;
+    }
+
+    // And what z does b have when it gets to that xy intersection?
+    const bz = b.position.z + (b.velocity.z * b_time);
+
     if (az !== bz) return null;
 
     intersection.z = az;
-    return { time, pos: intersection }
+    return { a_time, b_time, pos: intersection }
 }
 
 export async function findPathForRock(lines: Sequence<string>) {
     const hailstones = await lines.map(parseHailstone).toArray();
 
-    const [a, b, c] = hailstones;
+    const [first, second, third] = hailstones;
 
-    // const rock = parseRock("24, 13, 10 @ -3, 1, 2"); <-- actual rock answer.
+    for (let x=-500n; x<=500n; x++) {
+        for (let y=-500n; y<=500n; y++) {
+            for (let z=-500n; z<=500n; z++) {
 
-    // This doesn't work because: `pathsCross3D` is _actually_ checking whether objects collide.
-    // for this test: rock and hailstone pass the same point at different times.
-    // Let's change this ... maybe { a_time, b_time, pos }?
-    const rock = new Rock({x:9n, y:18n, z:20n}, {x:-3n, y:1n, z:2n})
-    const a_collision = pathsCross3D(a, rock)!;
-    console.log(`a: time=${String(a_collision.time)}, pos=${vecToStr(a_collision.pos)}`)
+                const first_translated = new Hailstone(first.position, {
+                    x: first.velocity.x - x,
+                    y: first.velocity.y - y,
+                    z: first.velocity.z - z
+                });
 
-    const b_collision = pathsCross3D(b, rock)!;
-    console.log(`b: time=${String(b_collision.time)}, pos=${vecToStr(b_collision.pos)}`)
+                const second_translated = new Hailstone(second.position, {
+                    x: second.velocity.x - x,
+                    y: second.velocity.y - y,
+                    z: second.velocity.z - z
+                });
 
-    const c_collision = pathsCross3D(c, rock)!;
-    console.log(`c: time=${String(c_collision.time)}, pos=${vecToStr(c_collision.pos)}`)
+                const third_translated = new Hailstone(third.position, {
+                    x: third.velocity.x - x,
+                    y: third.velocity.y - y,
+                    z: third.velocity.z - z
+                });
+
+                if(pathsCross(first_translated, second_translated) === null) continue;
+                if(pathsCross(first_translated, third_translated) === null) continue;
+                const first_second_intersect = pathsCross3D(first_translated, second_translated);
+                if (first_second_intersect === null) continue;
+                const first_third_intersect = pathsCross3D(first_translated, third_translated);
+                if (first_third_intersect === null) continue;
+
+                return new Hailstone(first_second_intersect.pos, {x,y,z});
+            }
+        }
+    }
+
 }
 
 export async function solvePart1(min: bigint, max: bigint, lines: Sequence<string>) {
@@ -128,8 +157,10 @@ export async function solvePart1(min: bigint, max: bigint, lines: Sequence<strin
     return intersectionsWithinTestArea(testAreaMin, testAreaMax, lines);
 }
 
+
+
 // If this script was invoked directly on the command line:
 if (`file://${process.argv[1]}` === import.meta.url) {
     const lines = linesFromFile("./data/day24.txt");
-    console.log(await solvePart1(200000000000000n, 400000000000000n, lines));
+    console.log(await findPathForRock(lines));
 }

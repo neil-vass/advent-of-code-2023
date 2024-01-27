@@ -65,14 +65,14 @@ describe("Part 1", () => {
 describe("Part 2", () => {
     it("Predicts intersections in 3D", () => {
         const hailstone = day24.parseHailstone("20, 19, 15 @ 1, -5, -3");
-        const rock = day24.parseRock("24, 13, 10 @ -3, 1, 2");
+        const rock = day24.parseHailstone("24, 13, 10 @ -3, 1, 2");
         const intersection = day24.pathsCross3D(hailstone, rock);
-        expect(intersection).toStrictEqual({ time: 1n, pos: { x: 21n, y: 14n, z: 12n }});
+        expect(intersection).toStrictEqual({ a_time: 1n, b_time: 1n, pos: { x: 21n, y: 14n, z: 12n }});
     });
 
     it("Finds path for rock", async () => {
         const rock = await day24.findPathForRock(exampleLines);
-        const expectedRock = day24.parseRock("24, 13, 10 @ -3, 1, 2");
+        const expectedRock = day24.parseHailstone("24, 13, 10 @ -3, 1, 2");
         expect(rock).toStrictEqual(expectedRock);
     });
 });
