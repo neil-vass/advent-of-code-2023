@@ -17,8 +17,8 @@ export class Sequence<T> {
     constructor(protected readonly seq: Iterable<T> | AsyncIterable<T>) {}
 
     async *[Symbol.asyncIterator]() : AsyncGenerator<T, void, void> {
-        for await(const x  of this.seq) {
-            yield x;
+        for await(const item  of this.seq) {
+            yield item;
         }
     }
 
@@ -26,9 +26,9 @@ export class Sequence<T> {
     // into an array. Only use this if you know the sequence is finite and
     // its contents will fit into memory.
     async toArray() {
-        let results: T[] = [];
-        for await (const x of this.seq) {
-            results.push(x);
+        let results = new Array<T>();
+        for await (const item of this.seq) {
+            results.push(item);
         }
         return results;
     }
@@ -87,15 +87,17 @@ export class Sequence<T> {
         return sequence.reduce((acc: number, val: number) => (acc < val) ? acc : val)
     }
 
-    static async maxObject(sequence: Sequence<any>, key: string) {
-        return sequence.reduce((bestSoFar: any, currentItem: any) => {
+    static async maxObject<T>(sequence: Sequence<T>, key: keyof T) {
+        // Having no initialValue means this will throw on an empty sequence.
+        return sequence.reduce((bestSoFar: T, currentItem: T) => {
             if (typeof currentItem[key] !== 'number') throw new Error("Key property must be a number");
             return (currentItem[key] > bestSoFar[key]) ? currentItem : bestSoFar;
         });
     }
 
-    static async minObject(sequence: Sequence<any>, key: string) {
-        return sequence.reduce((bestSoFar: any, currentItem: any) => {
+    static async minObject<T>(sequence: Sequence<T>, key: keyof T) {
+        // Having no initialValue means this will throw on an empty sequence.
+        return sequence.reduce((bestSoFar: T, currentItem: T) => {
             if (typeof currentItem[key] !== 'number') throw new Error("Key property must be a number");
             return (currentItem[key] < bestSoFar[key]) ? currentItem : bestSoFar;
         });
@@ -103,7 +105,7 @@ export class Sequence<T> {
 
     // On an infinite sequence, this will never return.
     static async count(sequence: Sequence<any>) {
-        return Sequence.sum(sequence.map(s => 1));
+        return Sequence.sum(sequence.map(() => 1));
     }
 }
 
